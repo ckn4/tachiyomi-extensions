@@ -111,8 +111,10 @@ class Dmzj : ConfigurableSource, HttpSource() {
             val cid = obj.getString("id")
             ret.add(
                 SManga.create().apply {
-                    title = obj.getString("title")
+                    title = obj.getString("name")
                     thumbnail_url = obj.getString("cover")
+                    if (!cover.contains("http"))
+                        cover = "http://images.dmzj1.com/".concat(cover);
                     author = obj.optString("authors")
                     status = when (obj.getString("status")) {
                         "已完结" -> SManga.COMPLETED
@@ -126,11 +128,11 @@ class Dmzj : ConfigurableSource, HttpSource() {
         return MangasPage(ret, arr.length() != 0)
     }
 
-    override fun popularMangaRequest(page: Int) = GET("$v3apiUrl/classify/0/0/${page - 1}.json")
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/classify/0/0/${page - 1}.json")
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
-    override fun latestUpdatesRequest(page: Int) = GET("$v3apiUrl/classify/0/1/${page - 1}.json")
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/classify/0/1/${page - 1}.json")
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
@@ -376,80 +378,62 @@ class Dmzj : ConfigurableSource, HttpSource() {
         throw UnsupportedOperationException("This method should not be called!")
 
     override fun getFilterList() = FilterList(
-        SortFilter(),
         GenreGroup(),
+        ReaderFilter(),
         StatusFilter(),
         TypeFilter(),
-        ReaderFilter()
+        SortFilter()
     )
 
     private class GenreGroup : UriPartFilter(
         "分类",
         arrayOf(
             Pair("全部", ""),
-            Pair("冒险", "4"),
-            Pair("百合", "3243"),
-            Pair("生活", "3242"),
-            Pair("四格", "17"),
-            Pair("伪娘", "3244"),
-            Pair("悬疑", "3245"),
-            Pair("后宫", "3249"),
-            Pair("热血", "3248"),
-            Pair("耽美", "3246"),
-            Pair("其他", "16"),
-            Pair("恐怖", "14"),
-            Pair("科幻", "7"),
-            Pair("格斗", "6"),
-            Pair("欢乐向", "5"),
-            Pair("爱情", "8"),
-            Pair("侦探", "9"),
-            Pair("校园", "13"),
-            Pair("神鬼", "12"),
-            Pair("魔法", "11"),
-            Pair("竞技", "10"),
-            Pair("历史", "3250"),
-            Pair("战争", "3251"),
-            Pair("魔幻", "5806"),
-            Pair("扶她", "5345"),
-            Pair("东方", "5077"),
-            Pair("奇幻", "5848"),
-            Pair("轻小说", "6316"),
-            Pair("仙侠", "7900"),
-            Pair("搞笑", "7568"),
-            Pair("颜艺", "6437"),
-            Pair("性转换", "4518"),
-            Pair("高清单行", "4459"),
-            Pair("治愈", "3254"),
-            Pair("宅系", "3253"),
-            Pair("萌系", "3252"),
-            Pair("励志", "3255"),
-            Pair("节操", "6219"),
-            Pair("职场", "3328"),
-            Pair("西方魔幻", "3365"),
-            Pair("音乐舞蹈", "3326"),
-            Pair("机战", "3325")
+            Pair("冒险", "1"),
+            Pair("欢乐向", "2"),
+            Pair("格斗", "3"),
+            Pair("科幻", "4"),
+            Pair("爱情", "5"),
+            Pair("竞技", "6"),
+            Pair("魔法", "7"),
+            Pair("校园", "8"),
+            Pair("悬疑", "9"),
+            Pair("恐怖", "10"),
+            Pair("生活亲情", "11"),
+            Pair("百合", "12"),
+            Pair("伪娘", "13"),
+            Pair("耽美", "14"),
+            Pair("后宫", "15"),
+            Pair("萌系", "16"),
+            Pair("治愈", "17"),
+            Pair("武侠", "18"),
+            Pair("职场", "19"),
+            Pair("奇幻", "20"),
+            Pair("节操", "21"),
+            Pair("轻小说", "22"),
+            Pair("搞笑", "23")
         )
     )
 
     private class StatusFilter : UriPartFilter(
         "连载状态",
         arrayOf(
-            Pair("全部", ""),
-            Pair("连载", "2309"),
-            Pair("完结", "2310")
+            Pair("全部", "0"),
+            Pair("连载", "1"),
+            Pair("完结", "2")
         )
     )
 
     private class TypeFilter : UriPartFilter(
         "地区",
         arrayOf(
-            Pair("全部", ""),
-            Pair("日本", "2304"),
-            Pair("韩国", "2305"),
-            Pair("欧美", "2306"),
-            Pair("港台", "2307"),
-            Pair("内地", "2308"),
-            Pair("其他", "8453")
+            Pair("全部", "0"),
+            Pair("日本", "1"),
+            Pair("韩国", "5"),
+            Pair("欧美", "3"),
+            Pair("港台", "4"),
+            Pair("内地", "2"),
+            Pair("其他", "6")
         )
     )
 
@@ -464,10 +448,10 @@ class Dmzj : ConfigurableSource, HttpSource() {
     private class ReaderFilter : UriPartFilter(
         "读者",
         arrayOf(
-            Pair("全部", ""),
-            Pair("少年", "3262"),
-            Pair("少女", "3263"),
-            Pair("青年", "3264")
+            Pair("全部", "0"),
+            Pair("少年", "1"),
+            Pair("少女", "2"),
+            Pair("青年", "3")
         )
     )
 
