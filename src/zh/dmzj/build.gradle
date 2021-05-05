@@ -5,8 +5,8 @@ ext {
     extName = 'Dmzj'
     pkgNameSuffix = 'zh.dmzj'
     extClass = '.Dmzj'
-    extVersionCode = 16
-    libVersion = '1.2'
+    extVersionCode = 17
+    libVersion = '1.3'
 }
 
 dependencies {

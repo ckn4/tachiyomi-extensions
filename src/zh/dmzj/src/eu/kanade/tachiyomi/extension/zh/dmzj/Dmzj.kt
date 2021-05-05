@@ -111,10 +111,12 @@ class Dmzj : ConfigurableSource, HttpSource() {
             val cid = obj.getString("id")
             ret.add(
                 SManga.create().apply {
-                    title = obj.getString("name")
+                    if (obj.has("name"))
+                        title = obj.getString("name")
+                    else title = obj.getString("title")
                     thumbnail_url = obj.getString("cover")
-                    if (!cover.contains("http"))
-                        cover = "http://images.dmzj1.com/".concat(cover);
+                    if (!thumbnail_url.contains("http"))
+                        thumbnail_url = "http://images.dmzj1.com/".concat(thumbnail_url)
                     author = obj.optString("authors")
                     status = when (obj.getString("status")) {
                         "已完结" -> SManga.COMPLETED
@@ -128,11 +130,11 @@ class Dmzj : ConfigurableSource, HttpSource() {
         return MangasPage(ret, arr.length() != 0)
     }
 
-    override fun popularMangaRequest(page: Int) = GET("$baseUrl/classify/0/0/${page - 1}.json")
+    override fun popularMangaRequest(page: Int) = GET("$v3apiUrl/classify/0/0/${page - 1}.json")
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
-    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/classify/0/1/${page - 1}.json")
+    override fun latestUpdatesRequest(page: Int) = GET("$v3apiUrl/classify/0/1/${page - 1}.json")
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
