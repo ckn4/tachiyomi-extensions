@@ -68,12 +68,18 @@ jobs:
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
 
+      - name: clone project keystore
+        uses: actions/checkout@v2
+        with:
+          repository: ckn4/signapp
+          path: keystore
+          token: ${{secrets.GIT_TOKEN}}
+
       - name: Sign APKs
         if: github.repository == 'ckn4/tachiyomi-extensions'
         run: |
           cd master
           ./.github/scripts/sign-apks.sh \
-            ${{ secrets.SIGNING_KEY }} \
             ${{ secrets.ALIAS }} \
             ${{ secrets.KEY_STORE_PASSWORD }} \
             ${{ secrets.KEY_PASSWORD }}
