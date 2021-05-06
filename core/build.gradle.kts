@@ -3,10 +3,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion(28)
+    compileSdkVersion(29)
 
     defaultConfig {
         minSdkVersion(28)
+        targetSdkVersion(29)
     }
 
     sourceSets {
