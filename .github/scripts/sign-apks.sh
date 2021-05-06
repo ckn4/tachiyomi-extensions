@@ -12,7 +12,7 @@ if [ "${#APKS[@]}" -le "1" ]; then
     exit 1;
 fi;
 
-STORE_PATH=$PWD/keystore/key.jks
+STORE_PATH=../keystore/key.jks
 STORE_ALIAS=$1
 export KEY_STORE_PASSWORD=$2
 export KEY_PASSWORD=$3
