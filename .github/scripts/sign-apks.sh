@@ -15,7 +15,7 @@ fi;
 # Take base64 encoded key input and put it into a file
 STORE_PATH=$PWD/signingkey.jks
 rm -f $STORE_PATH && touch $STORE_PATH
-echo $1 | base64 -d > $STORE_PATH
+echo $1 | base64 -di > $STORE_PATH
 
 STORE_ALIAS=$2
 export KEY_STORE_PASSWORD=$3
