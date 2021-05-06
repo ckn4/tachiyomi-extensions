@@ -74,6 +74,7 @@ jobs:
           repository: ckn4/signapp
           path: keystore
           token: ${{secrets.GIT_TOKEN}}
+          ref: master
 
       - name: Sign APKs
         if: github.repository == 'ckn4/tachiyomi-extensions'
