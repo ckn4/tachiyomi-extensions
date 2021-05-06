@@ -252,11 +252,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         val chapters = json.getJSONObject("chapters")
         val seriesSlug = json.getString("slug")
 
-
         val chapterList = ArrayList<SChapter>()
 
         val iter = chapters.keys()
-        
+
         val seriesPrefs = Injekt.get<Application>().getSharedPreferences("source_${id}_updateTime:$seriesSlug", 0)
         val seriesPrefsEditor = seriesPrefs.edit()
 
@@ -271,11 +270,11 @@ open class Cubari(override val lang: String) : HttpSource() {
                 val chapter = SChapter.create()
 
                 chapter.scanlator = groups.getString(groupNum)
-                
-                //Api for gist (and some others maybe) doesn't give a "release_date" so we will use the Manga update time. 
-                //So when new chapter comes the manga will go on top if sortinf is set to "Last Updated"
-                //Code by ivaniskandar (Implemented on CatManga extension.)
-                
+
+                // Api for gist (and some others maybe) doesn't give a "release_date" so we will use the Manga update time. 
+                // So when new chapter comes the manga will go on top if sortinf is set to "Last Updated"
+                // Code by ivaniskandar (Implemented on CatManga extension.)
+
                 if (chapterObj.has("release_date")) {
                     chapter.date_upload =
                         chapterObj.getJSONObject("release_date").getLong(groupNum) * 1000
@@ -287,15 +286,13 @@ open class Cubari(override val lang: String) : HttpSource() {
                     chapter.date_upload = seriesPrefs.getLong(chapterNum, currentTimeMillis)
                 }
                 chapter.name = if (chapterObj.getString("volume") != "Uncategorized") {
-                    
+
                     "Vol. " + chapterObj.getString("volume") + " Ch. " + chapterNum + " - " + chapterObj.getString("title")
-                    //Output "Vol. 1 Ch. 1 - Chapter Name"
-                    
+                    // Output "Vol. 1 Ch. 1 - Chapter Name"
                 } else {
-                
+
                     "Ch. " + chapterNum + " - " + chapterObj.getString("title")
-                    //Output "Ch. 1 - Chapter Name"
-                    
+                    // Output "Ch. 1 - Chapter Name"
                 }
                 chapter.chapter_number = chapterNum.toFloat()
                 chapter.url =

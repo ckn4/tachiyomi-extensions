@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.extension.en.vizshonenjump
 
-import com.github.salomonbrys.kotson.bool
 import com.github.salomonbrys.kotson.get
 import com.github.salomonbrys.kotson.int
 import com.github.salomonbrys.kotson.nullInt
@@ -289,7 +288,7 @@ class VizShonenJump : ParsedHttpSource() {
 
     private fun authCheckIntercept(chain: Interceptor.Chain): Response {
         if (loggedIn == null) {
-           checkIfIsLoggedIn(chain)
+            checkIfIsLoggedIn(chain)
         }
 
         return chain.proceed(chain.request())
