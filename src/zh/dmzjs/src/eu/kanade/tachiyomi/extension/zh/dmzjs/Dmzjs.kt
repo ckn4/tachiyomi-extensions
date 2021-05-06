@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.dmzj
+package eu.kanade.tachiyomi.extension.zh.dmzjs
 
 import android.app.Application
 import android.content.SharedPreferences
@@ -34,7 +34,7 @@ import java.util.ArrayList
  * Dmzj source
  */
 
-class Dmzj : ConfigurableSource, HttpSource() {
+class Dmzjs : ConfigurableSource, HttpSource() {
     override val lang = "zh"
     override val supportsLatest = true
     override val name = "动漫之家"
@@ -114,9 +114,10 @@ class Dmzj : ConfigurableSource, HttpSource() {
                     if (obj.has("name"))
                         title = obj.getString("name")
                     else title = obj.getString("title")
-                    var thumbnail_url = obj.getString("cover")
-                    if (!thumbnail_url.contains("http"))
-                        thumbnail_url = "http://images.dmzj1.com/"+thumbnail_url
+                    var cover = obj.getString("cover")
+                    if (!cover.contains("http"))
+                        cover = "http://images.dmzj1.com/"+cover
+                    thumbnail_url = cover
                     author = obj.optString("authors")
                     status = when (obj.getString("status")) {
                         "已完结" -> SManga.COMPLETED

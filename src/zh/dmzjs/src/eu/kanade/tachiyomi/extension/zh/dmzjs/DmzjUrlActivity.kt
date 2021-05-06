@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.dmzj
+package eu.kanade.tachiyomi.extension.zh.dmzjs
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
@@ -25,7 +25,7 @@ class DmzjUrlActivity : Activity() {
             }
             val mainIntent = Intent().apply {
                 action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", "${Dmzj.PREFIX_ID_SEARCH}$titleId")
+                putExtra("query", "${Dmzjs.PREFIX_ID_SEARCH}$titleId")
                 putExtra("filter", packageName)
             }
 

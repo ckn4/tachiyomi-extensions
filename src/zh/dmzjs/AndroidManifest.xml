@@ -4,7 +4,7 @@
 
     <application>
         <activity
-            android:name=".zh.dmzj.DmzjUrlActivity"
+            android:name=".zh.dmzjs.DmzjUrlActivity"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
