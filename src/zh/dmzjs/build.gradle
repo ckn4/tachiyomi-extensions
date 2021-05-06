@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 ext {
-    extName = 'Dmzj'
-    pkgNameSuffix = 'zh.dmzj'
-    extClass = '.Dmzj'
-    extVersionCode = 17
+    extName = 'Dmzjs'
+    pkgNameSuffix = 'zh.dmzjs'
+    extClass = '.Dmzjs'
+    extVersionCode = 1
     libVersion = '1.3'
 }
 

@@ -114,9 +114,9 @@ class Dmzj : ConfigurableSource, HttpSource() {
                     if (obj.has("name"))
                         title = obj.getString("name")
                     else title = obj.getString("title")
-                    thumbnail_url = obj.getString("cover")
+                    var thumbnail_url = obj.getString("cover")
                     if (!thumbnail_url.contains("http"))
-                        thumbnail_url = "http://images.dmzj1.com/".concat(thumbnail_url)
+                        thumbnail_url = "http://images.dmzj1.com/"+thumbnail_url
                     author = obj.optString("authors")
                     status = when (obj.getString("status")) {
                         "已完结" -> SManga.COMPLETED
