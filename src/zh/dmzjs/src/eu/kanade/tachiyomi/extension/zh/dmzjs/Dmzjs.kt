@@ -116,7 +116,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
                     else title = obj.getString("title")
                     var cover = obj.getString("cover")
                     if (!cover.contains("http"))
-                        cover = "http://images.dmzj1.com/"+cover
+                        cover = "http://images.dmzj1.com/" + cover
                     thumbnail_url = cover
                     author = obj.optString("authors")
                     status = when (obj.getString("status")) {
