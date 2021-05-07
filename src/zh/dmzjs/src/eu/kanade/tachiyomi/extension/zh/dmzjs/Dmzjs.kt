@@ -37,7 +37,7 @@ import java.util.ArrayList
 class Dmzjs : ConfigurableSource, HttpSource() {
     override val lang = "zh"
     override val supportsLatest = true
-    override val name = "动漫之家"
+    override val name = "动漫之家S"
     override val baseUrl = "https://m.dmzj1.com"
     private val v3apiUrl = "https://v3api.dmzj1.com"
     private val apiUrl = "https://api.dmzj.com"
@@ -135,7 +135,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
-    override fun latestUpdatesRequest(page: Int) = GET("$v3apiUrl/classify/0/1/${page - 1}.json")
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/classify/0-0-0-1-1-${page - 1}.json")
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
