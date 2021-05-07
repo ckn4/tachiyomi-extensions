@@ -12,14 +12,10 @@ if [ "${#APKS[@]}" -le "1" ]; then
     exit 1;
 fi;
 
-# Take base64 encoded key input and put it into a file
-STORE_PATH=$PWD/signingkey.jks
-rm -f $STORE_PATH && touch $STORE_PATH
-echo $1 | base64 -d > $STORE_PATH
-
-STORE_ALIAS=$2
-export KEY_STORE_PASSWORD=$3
-export KEY_PASSWORD=$4
+STORE_PATH=../keystore/key.jks
+STORE_ALIAS=$1
+export KEY_STORE_PASSWORD=$2
+export KEY_PASSWORD=$3
 
 DEST=$PWD/apk
 rm -rf $DEST && mkdir -p $DEST
