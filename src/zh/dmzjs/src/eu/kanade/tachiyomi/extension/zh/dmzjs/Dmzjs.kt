@@ -116,7 +116,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
                     else title = obj.getString("title")
                     var cover = obj.getString("cover")
                     if (!cover.contains("http"))
-                        cover = "http://images.dmzj1.com/" + cover
+                        cover = imageCDNUrl + '/' + cover
                     thumbnail_url = cover
                     author = obj.optString("authors")
                     status = when (obj.getString("status")) {
@@ -180,7 +180,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
             return GET(uri.toString())
         } else {
             var params = filters.map {
-                if (it !is SortFilter && it is UriPartFilter) {
+                if (it is UriPartFilter) {
                     it.toUriPart()
                 } else ""
             }.filter { it != "" }.joinToString("-")
@@ -188,9 +188,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
                 params = "0"
             }
 
-            val order = filters.filterIsInstance<SortFilter>().joinToString("") { (it as UriPartFilter).toUriPart() }
-
-            return GET("$v3apiUrl/classify/$params/$order/${page - 1}.json")
+            return GET("$baseUrl/classify/$params-${page - 1}.json")
         }
     }
 
@@ -391,7 +389,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
     private class GenreGroup : UriPartFilter(
         "分类",
         arrayOf(
-            Pair("全部", ""),
+            Pair("全部", "0"),
             Pair("冒险", "1"),
             Pair("欢乐向", "2"),
             Pair("格斗", "3"),
@@ -432,10 +430,10 @@ class Dmzjs : ConfigurableSource, HttpSource() {
         arrayOf(
             Pair("全部", "0"),
             Pair("日本", "1"),
-            Pair("韩国", "5"),
+            Pair("内地", "2"),
             Pair("欧美", "3"),
             Pair("港台", "4"),
-            Pair("内地", "2"),
+            Pair("韩国", "5"),
             Pair("其他", "6")
         )
     )
