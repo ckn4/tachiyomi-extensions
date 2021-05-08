@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.manhuaren
+package eu.kanade.tachiyomi.extension.zh.manhuarens
 
 import android.text.format.DateFormat
 import eu.kanade.tachiyomi.source.model.Filter
@@ -24,10 +24,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit.MINUTES
 
-class Manhuaren : HttpSource() {
+class Manhuarens : HttpSource() {
     override val lang = "zh"
     override val supportsLatest = true
-    override val name = "漫画人"
+    override val name = "漫画人s"
     override val baseUrl = "http://mangaapi.manhuaren.com"
 
     private val pageSize = 20
