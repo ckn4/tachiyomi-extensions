@@ -126,8 +126,8 @@ class Manhuarens : HttpSource() {
 
     override fun popularMangaRequest(page: Int): Request {
         val url = baseHttpUrl.newBuilder()
-            .addQueryParameter("subCategoryType", "0")
-            .addQueryParameter("subCategoryId", "0")
+            .addQueryParameter("subCategoryType", "2")
+            .addQueryParameter("subCategoryId", "36")
             .addQueryParameter("start", (pageSize * (page - 1)).toString())
             .addQueryParameter("limit", pageSize.toString())
             .addQueryParameter("sort", "0")
@@ -138,8 +138,8 @@ class Manhuarens : HttpSource() {
 
     override fun latestUpdatesRequest(page: Int): Request {
         val url = baseHttpUrl.newBuilder()
-            .addQueryParameter("subCategoryType", "0")
-            .addQueryParameter("subCategoryId", "0")
+            .addQueryParameter("subCategoryType", "2")
+            .addQueryParameter("subCategoryId", "36")
             .addQueryParameter("start", (pageSize * (page - 1)).toString())
             .addQueryParameter("limit", pageSize.toString())
             .addQueryParameter("sort", "1")
