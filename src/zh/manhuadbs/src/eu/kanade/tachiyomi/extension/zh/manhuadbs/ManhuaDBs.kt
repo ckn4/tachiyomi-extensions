@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.manhuadb
+package eu.kanade.tachiyomi.extension.zh.manhuadbs
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -13,7 +13,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
 
-class ManhuaDB : ParsedHttpSource() {
+class ManhuaDBs : ParsedHttpSource() {
 
     override val baseUrl = "https://www.manhuadb.com"
 
