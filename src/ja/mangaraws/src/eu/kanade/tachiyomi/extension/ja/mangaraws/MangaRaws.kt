@@ -11,11 +11,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.util.regex.Pattern
 
-abstract class MangaRaws(
-    override val name: String,
-    override val baseUrl: String
-) : ParsedHttpSource() {
+class MangaRaws : ParsedHttpSource() {
+    override val name = "MangaRaws"
+    override val baseUrl = "https://manga1001.com"
 
     override val lang = "ja"
 
@@ -35,7 +35,7 @@ abstract class MangaRaws(
 
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
         setUrlWithoutDomain(element.select("a:has(img)").attr("href"))
-        title = element.select("img").attr("alt").substringBefore("(RAW – Free)").trim()
+        title = element.select("img").attr("alt").substringBefore("(Raw – Free)").trim()
         thumbnail_url = element.select("img").attr("abs:src")
     }
 
@@ -67,7 +67,8 @@ abstract class MangaRaws(
 
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         setUrlWithoutDomain(element.attr("href"))
-        name = element.text().trim()
+        val Name = element.text().trim()
+        name = Pattern.compile("[^0-9.]").matcher(Name).replaceAll("")
     }
 
     override fun pageListParse(document: Document): List<Page> {

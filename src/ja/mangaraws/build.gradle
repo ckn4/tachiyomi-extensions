@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android'
 ext {
     extName = 'MangaRaws'
     pkgNameSuffix = 'ja.mangaraws'
-    extClass = '.MangaRawFactorys'
+    extClass = '.MangaRaws'
     extVersionCode = 1
     libVersion = '1.2'
 }
