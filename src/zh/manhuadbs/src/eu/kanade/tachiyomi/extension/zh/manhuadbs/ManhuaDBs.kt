@@ -19,7 +19,7 @@ class ManhuaDBs : ParsedHttpSource() {
 
     override val lang = "zh"
 
-    override val name = "漫画DB"
+    override val name = "漫画DBs"
 
     override val supportsLatest = true
 

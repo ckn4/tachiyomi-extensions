@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.copymanga
+package eu.kanade.tachiyomi.extension.zh.hotmanga
 
 import android.app.Application
 import android.content.SharedPreferences
@@ -33,9 +33,9 @@ import javax.crypto.spec.SecretKeySpec
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
 
-class CopyManga : ConfigurableSource, HttpSource() {
+class HotManga : ConfigurableSource, HttpSource() {
 
-    override val name = "拷贝漫画"
+    override val name = "热辣漫画"
     override val baseUrl = "https://www.copymanga.com"
     override val lang = "zh"
     override val supportsLatest = true
