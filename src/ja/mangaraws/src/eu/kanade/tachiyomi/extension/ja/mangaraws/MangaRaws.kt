@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.ja.mangaraw
+package eu.kanade.tachiyomi.extension.ja.mangaraws
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -12,7 +12,7 @@ import okhttp3.Protocol
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
-abstract class MangaRaw(
+abstract class MangaRaws(
     override val name: String,
     override val baseUrl: String
 ) : ParsedHttpSource() {

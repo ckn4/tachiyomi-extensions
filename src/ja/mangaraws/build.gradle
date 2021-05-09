@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 ext {
-    extName = 'MangaRaw'
-    pkgNameSuffix = 'ja.mangaraw'
-    extClass = '.MangaRawFactory'
-    extVersionCode = 3
+    extName = 'MangaRaws'
+    pkgNameSuffix = 'ja.mangaraws'
+    extClass = '.MangaRawFactorys'
+    extVersionCode = 1
     libVersion = '1.2'
 }
 
