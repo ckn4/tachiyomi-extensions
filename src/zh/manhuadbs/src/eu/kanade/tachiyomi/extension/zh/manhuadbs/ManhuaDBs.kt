@@ -48,7 +48,7 @@ class ManhuaDBs : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int): Request = popularMangaRequest(page)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manhua/list-page-$page.html")
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
@@ -91,7 +91,7 @@ class ManhuaDBs : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = "a:contains(下页):not(.disabled)"
 
-    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/manhua/list-page-$page.html")
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/manhua/list-r-4-s-2-page-$page.html")
 
     override fun popularMangaSelector() = "div.comic-book-unit"
 
