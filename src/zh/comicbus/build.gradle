@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 ext {
     extName = 'Comicbus'
-    pkgNameSuffix = 'zh.Comicbus'
+    pkgNameSuffix = 'zh.comicbus'
     extClass = '.comicbus'
     extVersionCode = 1
     libVersion = '1.2'
