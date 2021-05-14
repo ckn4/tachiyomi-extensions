@@ -113,7 +113,7 @@ class CopyMangas : ConfigurableSource, HttpSource() {
         val manga = SManga.create().apply {
             title = _title
             var picture = document.select("div.comicParticulars-title-left img").first().attr("data-src")
-            if (preferences.getBoolean(change_cdn_tomainland, false)) {
+            if (!preferences.getBoolean(change_cdn_tomainland, false)) {
                 picture = replaceWith277.replace(picture, "mirror2")
                 picture = replaceWith77.replace(picture, "mirror")
             }
@@ -198,7 +198,7 @@ class CopyMangas : ConfigurableSource, HttpSource() {
         val ret = ArrayList<Page>(pageArray.length())
         for (i in 0 until pageArray.length()) {
             var page = pageArray.getJSONObject(i).getString("url")
-            if (preferences.getBoolean(change_cdn_tomainland, false)) {
+            if (!preferences.getBoolean(change_cdn_tomainland, false)) {
                 page = replaceWith277.replace(page, "mirror2")
                 page = replaceWith77.replace(page, "mirror")
             }
@@ -340,7 +340,7 @@ class CopyMangas : ConfigurableSource, HttpSource() {
                 SManga.create().apply {
                     title = _title
                     var picture = obj.getString("cover")
-                    if (preferences.getBoolean(change_cdn_tomainland, false)) {
+                    if (!preferences.getBoolean(change_cdn_tomainland, false)) {
                         picture = replaceWith277.replace(picture, "mirror2")
                         picture = replaceWith77.replace(picture, "mirror")
                     }
@@ -359,7 +359,7 @@ class CopyMangas : ConfigurableSource, HttpSource() {
         val manga = SManga.create()
         element.select("div.exemptComicItem-img > a > img").first().let {
             var picture = it.attr("data-src")
-            if (preferences.getBoolean(change_cdn_tomainland, false)) {
+            if (!preferences.getBoolean(change_cdn_tomainland, false)) {
                 picture = replaceWith277.replace(picture, "mirror2")
                 picture = replaceWith77.replace(picture, "mirror")
             }
