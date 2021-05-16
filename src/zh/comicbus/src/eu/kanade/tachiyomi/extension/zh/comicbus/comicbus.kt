@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.extension.zh.comicbus
 
 import android.util.Log
+import com.luhuiguo.chinese.ChineseUtils
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -11,6 +12,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Request
 import okhttp3.Response
+import org.jsoup.Jsoup
 import java.net.URLEncoder
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -20,6 +22,7 @@ class comicbus : HttpSource() {
     override val lang: String = "zh"
     override val supportsLatest: Boolean = true
     override val baseUrl: String = "https://m.comicbus.com"
+    private val apiUrl: String = "http://app.6comic.com:88"
 
     private var cid = ""
     private var path = ""
@@ -30,7 +33,7 @@ class comicbus : HttpSource() {
     // Popular
 
     override fun popularMangaRequest(page: Int): Request {
-        return GET("http://app.6comic.com:88/i/hot-$page.html", headers)
+        return GET("$baseUrl/category/hot_comic-$page.html", headers)
     }
 
     override fun popularMangaParse(response: Response): MangasPage {
@@ -40,31 +43,30 @@ class comicbus : HttpSource() {
     // Latest
 
     override fun latestUpdatesRequest(page: Int): Request {
-        return GET("http://app.6comic.com:88/i/update-$page.html", headers)
+        return GET("$baseUrl/category/update_comic-$page.html", headers)
     }
 
     override fun latestUpdatesParse(response: Response): MangasPage {
-        val html = bodyWithCharset(response)
-        val result: Array<String> = html.split("\\|".toRegex()).toTypedArray()
-        val mangas = mutableListOf<SManga>()
-        for (i in result.indices) {
-            val _url = match("(\\d+),,.*?,.*?,([^,]+).*?", result[i], 1)
-            val _title = match("(\\d+),,.*?,.*?,([^,]+).*?", result[i], 2)
-            mangas.add(
+        val document = asJsoupWithCharset(response)
+        val mangasList = mutableListOf<SManga>()
+        document.select(".picborder").map { element ->
+            mangasList.add(
                 SManga.create().apply {
-                    url = _url!!
-                    title = _title!!
-                    thumbnail_url = "http://app.6comic.com:88/pics/0/$url.jpg"
+                    title = element.select("a").attr("title")
+                    val uri = element.select("a").attr("href")
+                    url = uri.substring(13, uri.length - 5)
+                    thumbnail_url = "$baseUrl/" + element.select("img").attr("src").trim()
                 }
             )
         }
-        return MangasPage(mangas, false)
+        return MangasPage(mangasList, true)
     }
 
     // Search
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        val keyword = URLEncoder.encode(query, "big5")
+        var keyword = ChineseUtils.toTraditional(query)
+        keyword = URLEncoder.encode(keyword, "big5")
         val queryuri = "$baseUrl/data/search.aspx?k=" + keyword + "&page=$page"
         return GET(queryuri, headers)
     }
@@ -78,7 +80,7 @@ class comicbus : HttpSource() {
                 title = replaceWith.replace(titleorigin, "")
                 val uri = element.select("a").attr("href")
                 url = uri.substring(13, uri.length - 5)
-                thumbnail_url = "https://m.comicbus.com/" + element.select("img").attr("src").trim()
+                thumbnail_url = "$baseUrl/" + element.select("img").attr("src").trim()
             }
         }
         return MangasPage(mangas, false)
@@ -87,7 +89,7 @@ class comicbus : HttpSource() {
     // Details
 
     override fun mangaDetailsRequest(manga: SManga): Request {
-        return GET("http://app.6comic.com:88/info/" + manga.url + ".html")
+        return GET("$apiUrl/info/" + manga.url + ".html", headers)
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
@@ -95,7 +97,7 @@ class comicbus : HttpSource() {
         val _result = result.split("\\|".toRegex()).toTypedArray()
         return SManga.create().apply {
             title = _result[4]
-            thumbnail_url = "http://app.6comic.com:88/pics/0/" + _result[1] + ".jpg"
+            thumbnail_url = "$apiUrl/pics/0/" + _result[1] + ".jpg"
             description = _result[10].substring(2).trim()
             if (_result[8].indexOf("&#") == -1) {
                 author = _result[8]
@@ -112,7 +114,7 @@ class comicbus : HttpSource() {
     // Chapters
 
     override fun chapterListRequest(manga: SManga): Request {
-        return GET("http://app.6comic.com:88/comic/" + manga.url + ".html")
+        return GET("$apiUrl/comic/" + manga.url + ".html", headers)
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
@@ -143,7 +145,7 @@ class comicbus : HttpSource() {
         } else {
             chapters.add(
                 SChapter.create().apply {
-                    name = "为动画"
+                    name = "该条目为动画"
                     url = ""
                 }
             )
@@ -156,7 +158,7 @@ class comicbus : HttpSource() {
     override fun pageListRequest(chapter: SChapter): Request {
         cid = chapter.scanlator!!
         path = chapter.url
-        return GET("http://app.6comic.com:88/comics/" + chapter.scanlator + ".html")
+        return GET("$apiUrl/comics/" + chapter.scanlator + ".html", headers)
     }
 
     override fun pageListParse(response: Response): List<Page> {
@@ -218,5 +220,11 @@ class comicbus : HttpSource() {
     fun bodyWithCharset(response: Response): String {
         val htmlBytes: ByteArray = response.body!!.bytes()
         return String(htmlBytes, charset("big5"))
+    }
+
+    // asJsoup(big5)
+
+    fun asJsoupWithCharset(response: Response): org.jsoup.nodes.Document {
+        return Jsoup.parse(bodyWithCharset(response), response.request.url.toString())
     }
 }

@@ -9,5 +9,8 @@ ext {
     libVersion = '1.2'
 }
 
+dependencies {
+    implementation 'com.luhuiguo:chinese-utils:1.0'
+}
 
 apply from: "$rootDir/common.gradle"
