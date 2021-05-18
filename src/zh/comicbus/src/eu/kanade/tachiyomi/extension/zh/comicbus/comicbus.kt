@@ -1,8 +1,11 @@
 package eu.kanade.tachiyomi.extension.zh.comicbus
 
+import android.app.Application
+import android.content.SharedPreferences
 import android.util.Log
 import com.luhuiguo.chinese.ChineseUtils
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -13,11 +16,13 @@ import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.Jsoup
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.net.URLEncoder
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class comicbus : HttpSource() {
+class comicbus : ConfigurableSource, HttpSource() {
     override val name: String = "comicbus"
     override val lang: String = "zh"
     override val supportsLatest: Boolean = true
@@ -26,6 +31,10 @@ class comicbus : HttpSource() {
 
     private var cid = ""
     private var path = ""
+
+    private val preferences: SharedPreferences by lazy {
+        Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
+    }
 
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", baseUrl)
@@ -52,10 +61,17 @@ class comicbus : HttpSource() {
         document.select(".picborder").map { element ->
             mangasList.add(
                 SManga.create().apply {
-                    title = element.select("a").attr("title")
+                    var _title = element.select("a").attr("title")
+                    if (preferences.getBoolean(SHOW_Simplified_Chinese_TITLE_PREF, false)) {
+                        _title = ChineseUtils.toSimplified(_title)
+                    }
+                    title = _title
                     val uri = element.select("a").attr("href")
                     url = uri.substring(13, uri.length - 5)
-                    thumbnail_url = "$baseUrl/" + element.select("img").attr("src").trim()
+                    val _img = element.select("img").attr("src").trim()
+                    if (preferences.getBoolean(SHOW_Img_With_Api, false)) {
+                        thumbnail_url = "$apiUrl/$_img"
+                    } else thumbnail_url = "$baseUrl/$_img"
                 }
             )
         }
@@ -77,7 +93,11 @@ class comicbus : HttpSource() {
             SManga.create().apply {
                 val replaceWith = Regex("</?font.*?>")
                 val titleorigin = element.select("a").attr("title")
-                title = replaceWith.replace(titleorigin, "")
+                var _title = replaceWith.replace(titleorigin, "")
+                if (preferences.getBoolean(SHOW_Simplified_Chinese_TITLE_PREF, false)) {
+                    _title = ChineseUtils.toSimplified(_title)
+                }
+                title = _title
                 val uri = element.select("a").attr("href")
                 url = uri.substring(13, uri.length - 5)
                 thumbnail_url = "$baseUrl/" + element.select("img").attr("src").trim()
@@ -96,7 +116,11 @@ class comicbus : HttpSource() {
         val result = bodyWithCharset(response)
         val _result = result.split("\\|".toRegex()).toTypedArray()
         return SManga.create().apply {
-            title = _result[4]
+            var _title = _result[4]
+            if (preferences.getBoolean(SHOW_Simplified_Chinese_TITLE_PREF, false)) {
+                _title = ChineseUtils.toSimplified(_title)
+            }
+            title = _title
             thumbnail_url = "$apiUrl/pics/0/" + _result[1] + ".jpg"
             description = _result[10].substring(2).trim()
             if (_result[8].indexOf("&#") == -1) {
@@ -198,6 +222,47 @@ class comicbus : HttpSource() {
         } else {
             Log.d(tag, content)
         }
+    }
+
+    // Change Title to Simplified Chinese For Library Gobal Search Optionally
+    override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
+        val zhPreference = androidx.preference.CheckBoxPreference(screen.context).apply {
+            key = SHOW_Simplified_Chinese_TITLE_PREF
+            title = "将标题转换为简体中文"
+            summary = "需要重启软件以生效。已添加漫画需要迁移改变标题。"
+
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putBoolean(SHOW_Simplified_Chinese_TITLE_PREF, newValue as Boolean).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }
+        val imgPreference = androidx.preference.CheckBoxPreference(screen.context).apply {
+            key = SHOW_Img_With_Api
+            title = "发现中漫画的封面使用api的值"
+            summary = "可能会清楚一点，网页上的封面有点模糊"
+
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putBoolean(SHOW_Img_With_Api, newValue as Boolean).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }
+        screen.addPreference(zhPreference)
+        screen.addPreference(imgPreference)
+    }
+
+    companion object {
+        private const val SHOW_Simplified_Chinese_TITLE_PREF = "showSCTitle"
+        private const val SHOW_Img_With_Api = "showImgApi"
     }
 
     // String match
