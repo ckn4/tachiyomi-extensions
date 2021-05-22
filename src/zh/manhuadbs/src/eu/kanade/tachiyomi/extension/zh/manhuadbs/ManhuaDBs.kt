@@ -44,13 +44,21 @@ class ManhuaDBs : ParsedHttpSource() {
         return document.select("div.text-center > img.img-fluid").attr("abs:src")
     }
 
-    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga {
+        val manga = SManga.create()
+        element.select(".comicbook-index").first().let {
+            manga.setUrlWithoutDomain(it.select("a").first().attr("href"))
+            manga.title = it.select("a").attr("title")
+        }
+        manga.thumbnail_url = element.select("a > img").attr("src")
+        return manga
+    }
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manhua/list-page-$page.html")
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/update_$page.html")
 
-    override fun latestUpdatesSelector() = popularMangaSelector()
+    override fun latestUpdatesSelector() = ".comicbook-index"
 
     override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
         title = document.select("h1.comic-title").text()
@@ -81,9 +89,9 @@ class ManhuaDBs : ParsedHttpSource() {
 
     override fun popularMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
-        element.select("h2").first().let {
+        element.select(".media.comic-book-unit").first().let {
             manga.setUrlWithoutDomain(it.select("a").first().attr("href"))
-            manga.title = it.text()
+            manga.title = it.select(".media-body > h2 > a").text()
         }
         manga.thumbnail_url = element.select("a > img").attr("abs:src")
         return manga
