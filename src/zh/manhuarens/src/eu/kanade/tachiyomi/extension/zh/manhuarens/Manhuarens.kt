@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.extension.zh.manhuarens
 
 import android.text.format.DateFormat
-import android.util.Log
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -263,7 +262,7 @@ class Manhuarens : HttpSource() {
         val res = response.body!!.string()
         val obj = JSONObject(res).getJSONObject("response")
         val ret = ArrayList<SChapter>()
-        listOf("mangaEpisode", "mangaWords", "mangaRolls").forEach {
+        listOf("mangaWords", "mangaRolls", "mangaEpisode").forEach {
             if (obj.has(it)) {
                 ret.addAll(chaptersFromJSONArray(it, obj.getJSONArray(it)))
             }
