@@ -197,7 +197,7 @@ class comicbus : ConfigurableSource, HttpSource() {
         val pagenum = r[3].toInt()
         val last = r[4]
         return mutableListOf<Page>().apply {
-            for (i in 0..pagenum) {
+            for (i in 0..pagenum - 1) {
                 val last1 = last.substring(i % 100 / 10 + 3 * (i % 10), i % 100 / 10 + 3 + 3 * (i % 10))
                 add(Page(size, "", "http://img" + imgserver + ".8comic.com/" + name1 + "/" + cid + "/" + name + "/" + String.format("%03d", i + 1) + "_" + last1 + ".jpg"))
             }
