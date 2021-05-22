@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.extension.zh.manhuarens
 
 import android.text.format.DateFormat
+import android.util.Log
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -104,7 +105,14 @@ class Manhuarens : HttpSource() {
             ret.add(
                 SManga.create().apply {
                     title = obj.getString("mangaName")
-                    thumbnail_url = obj.getString("mangaCoverimageUrl")
+                    // thumbnail_url = obj.getString("mangaCoverimageUrl")
+                    thumbnail_url = ""
+                    obj.optString("mangaCoverimageUrl").let {
+                        if (it != "") { thumbnail_url = it }
+                    }
+                    if (thumbnail_url == "") {
+                        thumbnail_url = "http://mhfm5.tel.cdndm5.com/tag/category/nopic.jpg"
+                    }
                     author = obj.optString("mangaAuthor")
                     status = when (obj.getInt("mangaIsOver")) {
                         1 -> SManga.COMPLETED
