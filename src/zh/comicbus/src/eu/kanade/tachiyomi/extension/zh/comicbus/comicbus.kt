@@ -159,7 +159,6 @@ class comicbus : ConfigurableSource, HttpSource() {
 
     override fun chapterListParse(response: Response): List<SChapter> {
         var result = bodyWithCharset(response)
-        debugLarge("img", result)
         var ourl = response.request.url.toString()
         ourl = ourl.substring(31, ourl.length - 5)
         if (match("(<!--ch-->).+", result, 1) != null) {
@@ -173,7 +172,21 @@ class comicbus : ConfigurableSource, HttpSource() {
             val _result = result.split("\\|".toRegex()).toTypedArray()
             for (m in _result.indices) {
                 val _name = match("\\d+ (.*)", _result[m], 1)
-                if (_name != null) {
+                val _fanwai = match("8\\d{3}", _result[m], 0)
+                if (_name != null && _fanwai != null) {
+                    chapters.add(
+                        SChapter.create().apply {
+                            name = _name
+                            url = m.toString()
+                            scanlator = ourl
+                        }
+                    )
+                }
+            }
+            for (m in _result.indices) {
+                val _name = match("\\d+ (.*)", _result[m], 1)
+                val _fanwai = match("8\\d{3}", _result[m], 0)
+                if (_name != null && _fanwai == null) {
                     chapters.add(
                         SChapter.create().apply {
                             name = _name
