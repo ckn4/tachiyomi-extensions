@@ -334,7 +334,7 @@ class comicbus : ConfigurableSource, HttpSource() {
             setDefaultValue("4")
             setOnPreferenceChangeListener { _, newValue ->
                 try {
-                    val setting = preferences.edit().putString(IMAGE_CDN_RATELIMIT_PREF, newValue as String).commit()
+                    val setting = preferences.edit().putString(API_RATELIMIT_PREF, newValue as String).commit()
                     setting
                 } catch (e: Exception) {
                     e.printStackTrace()
