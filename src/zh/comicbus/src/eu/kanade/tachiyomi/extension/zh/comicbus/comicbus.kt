@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.luhuiguo.chinese.ChineseUtils
+import eu.kanade.tachiyomi.lib.ratelimit.SpecificHostRateLimitInterceptor
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -13,6 +14,8 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -28,6 +31,7 @@ class comicbus : ConfigurableSource, HttpSource() {
     override val supportsLatest: Boolean = true
     override val baseUrl: String = "https://m.comicbus.com"
     private val apiUrl: String = "http://app.6comic.com:88"
+    private val imageServer = arrayOf("http://img4.8comic.com", "http://img8.8comic.com")
 
     private var cid = ""
     private var path = ""
@@ -35,6 +39,18 @@ class comicbus : ConfigurableSource, HttpSource() {
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
+
+    private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(baseUrl.toHttpUrlOrNull()!!, preferences.getString(MAINSITE_RATELIMIT_PREF, "2")!!.toInt())
+    private val apiRateLimitInterceptor = SpecificHostRateLimitInterceptor(apiUrl.toHttpUrlOrNull()!!, preferences.getString(API_RATELIMIT_PREF, "4")!!.toInt())
+    private val imageCDNRateLimitInterceptor1 = SpecificHostRateLimitInterceptor(imageServer[0].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "4")!!.toInt())
+    private val imageCDNRateLimitInterceptor2 = SpecificHostRateLimitInterceptor(imageServer[1].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "4")!!.toInt())
+
+    override val client: OkHttpClient = network.client.newBuilder()
+        .addNetworkInterceptor(apiRateLimitInterceptor)
+        .addNetworkInterceptor(mainSiteRateLimitInterceptor)
+        .addNetworkInterceptor(imageCDNRateLimitInterceptor1)
+        .addNetworkInterceptor(imageCDNRateLimitInterceptor2)
+        .build()
 
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", baseUrl)
@@ -143,6 +159,7 @@ class comicbus : ConfigurableSource, HttpSource() {
 
     override fun chapterListParse(response: Response): List<SChapter> {
         var result = bodyWithCharset(response)
+        debugLarge("img", result)
         var ourl = response.request.url.toString()
         ourl = ourl.substring(31, ourl.length - 5)
         if (match("(<!--ch-->).+", result, 1) != null) {
@@ -256,13 +273,87 @@ class comicbus : ConfigurableSource, HttpSource() {
                 }
             }
         }
+
+        val mainSiteRateLimitPreference = androidx.preference.ListPreference(screen.context).apply {
+            key = MAINSITE_RATELIMIT_PREF
+            title = MAINSITE_RATELIMIT_PREF_TITLE
+            entries = ENTRIES_ARRAY
+            entryValues = ENTRIES_ARRAY
+            summary = MAINSITE_RATELIMIT_PREF_SUMMARY
+
+            setDefaultValue("2")
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putString(MAINSITE_RATELIMIT_PREF, newValue as String).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        val imgCDNRateLimitPreference = androidx.preference.ListPreference(screen.context).apply {
+            key = IMAGE_CDN_RATELIMIT_PREF
+            title = IMAGE_CDN_RATELIMIT_PREF_TITLE
+            entries = ENTRIES_ARRAY
+            entryValues = ENTRIES_ARRAY
+            summary = IMAGE_CDN_RATELIMIT_PREF_SUMMARY
+
+            setDefaultValue("4")
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putString(IMAGE_CDN_RATELIMIT_PREF, newValue as String).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }
+        val apiRatelimitPreference = androidx.preference.ListPreference(screen.context).apply {
+            key = API_RATELIMIT_PREF
+            title = API_RATELIMIT_PREF_TITLE
+            entries = ENTRIES_ARRAY
+            entryValues = ENTRIES_ARRAY
+            summary = API_RATELIMIT_PREF_SUMMARY
+
+            setDefaultValue("4")
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putString(IMAGE_CDN_RATELIMIT_PREF, newValue as String).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }
+
         screen.addPreference(zhPreference)
         screen.addPreference(imgPreference)
+        screen.addPreference(mainSiteRateLimitPreference)
+        screen.addPreference(imgCDNRateLimitPreference)
+        screen.addPreference(apiRatelimitPreference)
     }
 
     companion object {
         private const val SHOW_Simplified_Chinese_TITLE_PREF = "showSCTitle"
         private const val SHOW_Img_With_Api = "showImgApi"
+
+        private const val MAINSITE_RATELIMIT_PREF = "mainSiteRatelimitPreference"
+        private const val MAINSITE_RATELIMIT_PREF_TITLE = "主站每秒连接数限制" // "Ratelimit permits per second for main website"
+        private const val MAINSITE_RATELIMIT_PREF_SUMMARY = "此值影响更新书架时发起连接请求的数量。调低此值可能减小IP被屏蔽的几率，但加载速度也会变慢。需要重启软件以生效。\n当前值：%s" // "This value affects network request amount for updating library. Lower this value may reduce the chance to get IP Ban, but loading speed will be slower too. Tachiyomi restart required."
+
+        private const val API_RATELIMIT_PREF = "apiRatelimitPreference"
+        private const val API_RATELIMIT_PREF_TITLE = "API每秒连接数限制" // "Ratelimit permits per second for main website"
+        private const val API_RATELIMIT_PREF_SUMMARY = "此值影响更新书架时发起连接请求的数量。调低此值可能减小IP被屏蔽的几率，但加载速度也会变慢。需要重启软件以生效。\n当前值：%s" // "This value affects network request amount for updating library. Lower this value may reduce the chance to get IP Ban, but loading speed will be slower too. Tachiyomi restart required."
+
+        private const val IMAGE_CDN_RATELIMIT_PREF = "imgCDNRatelimitPreference"
+        private const val IMAGE_CDN_RATELIMIT_PREF_TITLE = "图片CDN每秒连接数限制" // "Ratelimit permits per second for image CDN"
+        private const val IMAGE_CDN_RATELIMIT_PREF_SUMMARY = "此值影响加载图片时发起连接请求的数量。调低此值可能减小IP被屏蔽的几率，但加载速度也会变慢。需要重启软件以生效。\n当前值：%s" // "This value affects network request amount for loading image. Lower this value may reduce the chance to get IP Ban, but loading speed will be slower too. Tachiyomi restart required."
+
+        private val ENTRIES_ARRAY = (1..10).map { i -> i.toString() }.toTypedArray()
     }
 
     // String match
