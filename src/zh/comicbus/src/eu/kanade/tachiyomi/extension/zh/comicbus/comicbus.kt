@@ -22,6 +22,7 @@ import org.jsoup.Jsoup
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -40,20 +41,22 @@ class comicbus : ConfigurableSource, HttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(baseUrl.toHttpUrlOrNull()!!, preferences.getString(MAINSITE_RATELIMIT_PREF, "2")!!.toInt())
-    private val apiRateLimitInterceptor = SpecificHostRateLimitInterceptor(apiUrl.toHttpUrlOrNull()!!, preferences.getString(API_RATELIMIT_PREF, "4")!!.toInt())
-    private val imageCDNRateLimitInterceptor1 = SpecificHostRateLimitInterceptor(imageServer[0].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "4")!!.toInt())
-    private val imageCDNRateLimitInterceptor2 = SpecificHostRateLimitInterceptor(imageServer[1].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "4")!!.toInt())
+    private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(baseUrl.toHttpUrlOrNull()!!, preferences.getString(MAINSITE_RATELIMIT_PREF, "1")!!.toInt())
+    private val apiRateLimitInterceptor = SpecificHostRateLimitInterceptor(apiUrl.toHttpUrlOrNull()!!, preferences.getString(API_RATELIMIT_PREF, "2")!!.toInt())
+    private val imageCDNRateLimitInterceptor1 = SpecificHostRateLimitInterceptor(imageServer[0].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
+    private val imageCDNRateLimitInterceptor2 = SpecificHostRateLimitInterceptor(imageServer[1].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
 
     override val client: OkHttpClient = network.client.newBuilder()
         .addNetworkInterceptor(apiRateLimitInterceptor)
         .addNetworkInterceptor(mainSiteRateLimitInterceptor)
         .addNetworkInterceptor(imageCDNRateLimitInterceptor1)
         .addNetworkInterceptor(imageCDNRateLimitInterceptor2)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", baseUrl)
+//    override fun headersBuilder() = super.headersBuilder()
+//        .add("Referer", baseUrl)
 
     // Popular
 
@@ -229,7 +232,7 @@ class comicbus : ConfigurableSource, HttpSource() {
         return mutableListOf<Page>().apply {
             for (i in 0..pagenum - 1) {
                 val last1 = last.substring(i % 100 / 10 + 3 * (i % 10), i % 100 / 10 + 3 + 3 * (i % 10))
-                add(Page(size, "", "http://img" + imgserver + ".8comic.com/" + name1 + "/" + cid + "/" + name + "/" + String.format("%03d", i + 1) + "_" + last1 + ".jpg"))
+                add(Page(size, "", "https://img" + imgserver + ".8comic.com/" + name1 + "/" + cid + "/" + name + "/" + String.format("%03d", i + 1) + "_" + last1 + ".jpg"))
             }
         }
     }
@@ -294,7 +297,7 @@ class comicbus : ConfigurableSource, HttpSource() {
             entryValues = ENTRIES_ARRAY
             summary = MAINSITE_RATELIMIT_PREF_SUMMARY
 
-            setDefaultValue("2")
+            setDefaultValue("1")
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString(MAINSITE_RATELIMIT_PREF, newValue as String).commit()
@@ -313,7 +316,7 @@ class comicbus : ConfigurableSource, HttpSource() {
             entryValues = ENTRIES_ARRAY
             summary = IMAGE_CDN_RATELIMIT_PREF_SUMMARY
 
-            setDefaultValue("4")
+            setDefaultValue("2")
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString(IMAGE_CDN_RATELIMIT_PREF, newValue as String).commit()
@@ -331,7 +334,7 @@ class comicbus : ConfigurableSource, HttpSource() {
             entryValues = ENTRIES_ARRAY
             summary = API_RATELIMIT_PREF_SUMMARY
 
-            setDefaultValue("4")
+            setDefaultValue("2")
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString(API_RATELIMIT_PREF, newValue as String).commit()
