@@ -32,7 +32,7 @@ class comicbus : ConfigurableSource, HttpSource() {
     override val supportsLatest: Boolean = true
     override val baseUrl: String = "https://m.comicbus.com"
     private val apiUrl: String = "http://app.6comic.com:88"
-    private val imageServer = arrayOf("http://img4.8comic.com", "http://img8.8comic.com")
+    private val imageServer = arrayOf("https://img1.8comic.com", "https://img4.8comic.com", "https://img8.8comic.com")
 
     private var cid = ""
     private var path = ""
@@ -45,14 +45,17 @@ class comicbus : ConfigurableSource, HttpSource() {
     private val apiRateLimitInterceptor = SpecificHostRateLimitInterceptor(apiUrl.toHttpUrlOrNull()!!, preferences.getString(API_RATELIMIT_PREF, "2")!!.toInt())
     private val imageCDNRateLimitInterceptor1 = SpecificHostRateLimitInterceptor(imageServer[0].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
     private val imageCDNRateLimitInterceptor2 = SpecificHostRateLimitInterceptor(imageServer[1].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
+    private val imageCDNRateLimitInterceptor3 = SpecificHostRateLimitInterceptor(imageServer[2].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
 
     override val client: OkHttpClient = network.client.newBuilder()
         .addNetworkInterceptor(apiRateLimitInterceptor)
         .addNetworkInterceptor(mainSiteRateLimitInterceptor)
         .addNetworkInterceptor(imageCDNRateLimitInterceptor1)
         .addNetworkInterceptor(imageCDNRateLimitInterceptor2)
+        .addNetworkInterceptor(imageCDNRateLimitInterceptor3)
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
 //    override fun headersBuilder() = super.headersBuilder()
@@ -100,7 +103,10 @@ class comicbus : ConfigurableSource, HttpSource() {
     // Search
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        var keyword = ChineseUtils.toTraditional(query)
+        var keyword = query
+        if (preferences.getBoolean(SERACH_WITH_TRAN, false)) {
+            keyword = ChineseUtils.toTraditional(keyword)
+        }
         keyword = URLEncoder.encode(keyword, "big5")
         val queryuri = "$baseUrl/data/search.aspx?k=" + keyword + "&page=$page"
         return GET(queryuri, headers)
@@ -290,6 +296,22 @@ class comicbus : ConfigurableSource, HttpSource() {
             }
         }
 
+        val searchPreference = androidx.preference.CheckBoxPreference(screen.context).apply {
+            key = SERACH_WITH_TRAN
+            title = "搜索是否自动转换为繁体"
+            summary = "否则可能需要手动输入繁体来搜索，有些条目搜索不出来请尝试关闭此项"
+
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putBoolean(SERACH_WITH_TRAN, newValue as Boolean).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }
+
         val mainSiteRateLimitPreference = androidx.preference.ListPreference(screen.context).apply {
             key = MAINSITE_RATELIMIT_PREF
             title = MAINSITE_RATELIMIT_PREF_TITLE
@@ -348,6 +370,7 @@ class comicbus : ConfigurableSource, HttpSource() {
 
         screen.addPreference(zhPreference)
         screen.addPreference(imgPreference)
+        screen.addPreference(searchPreference)
         screen.addPreference(mainSiteRateLimitPreference)
         screen.addPreference(imgCDNRateLimitPreference)
         screen.addPreference(apiRatelimitPreference)
@@ -356,6 +379,7 @@ class comicbus : ConfigurableSource, HttpSource() {
     companion object {
         private const val SHOW_Simplified_Chinese_TITLE_PREF = "showSCTitle"
         private const val SHOW_Img_With_Api = "showImgApi"
+        private const val SERACH_WITH_TRAN = "searchWithTran"
 
         private const val MAINSITE_RATELIMIT_PREF = "mainSiteRatelimitPreference"
         private const val MAINSITE_RATELIMIT_PREF_TITLE = "主站每秒连接数限制" // "Ratelimit permits per second for main website"
