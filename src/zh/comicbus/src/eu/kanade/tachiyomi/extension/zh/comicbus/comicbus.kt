@@ -19,9 +19,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -89,7 +92,7 @@ class comicbus : ConfigurableSource, HttpSource() {
                     }
                     title = _title
                     val uri = element.select("a").attr("href")
-                    url = uri.substring(13, uri.length - 5)
+                    url = uri.substring(7, uri.length - 5)
                     val _img = element.select("img").attr("src").trim()
                     if (preferences.getBoolean(SHOW_Img_With_Api, false)) {
                         thumbnail_url = "$apiUrl/$_img"
@@ -124,7 +127,7 @@ class comicbus : ConfigurableSource, HttpSource() {
                 }
                 title = _title
                 val uri = element.select("a").attr("href")
-                url = uri.substring(13, uri.length - 5)
+                url = uri.substring(7, uri.length - 5)
                 thumbnail_url = "$baseUrl/" + element.select("img").attr("src").trim()
             }
         }
@@ -134,25 +137,25 @@ class comicbus : ConfigurableSource, HttpSource() {
     // Details
 
     override fun mangaDetailsRequest(manga: SManga): Request {
-        return GET("$apiUrl/info/" + manga.url + ".html", headers)
+        return GET("$baseUrl/comic/${manga.url}.html", headers)
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
-        val result = bodyWithCharset(response)
-        val _result = result.split("\\|".toRegex()).toTypedArray()
+        val document = asJsoupWithCharset(response)
         return SManga.create().apply {
-            var _title = _result[4]
+            var _title = document.select(".info > .title").text()
             if (preferences.getBoolean(SHOW_Simplified_Chinese_TITLE_PREF, false)) {
                 _title = ChineseUtils.toSimplified(_title)
             }
             title = _title
-            thumbnail_url = "$apiUrl/pics/0/" + _result[1] + ".jpg"
-            description = _result[10].substring(2).trim()
-            if (_result[8].indexOf("&#") == -1) {
-                author = _result[8]
-            }
-            genre = _result[9].replace("\\s\\d+:\\d+:\\d+".toRegex(), "")
-            status = when (_result[7]) {
+            val _pic = document.select(".cover img").attr("src")
+            thumbnail_url = "$apiUrl$_pic"
+            description = document.select(".item_show_detail .full_text").text().substring(2).trim()
+            val _author = document.select("p:contains(作者)").eq(0).text()
+            author = match("作者(.*)", _author, 1)
+            var _status = document.select("p:contains(人氣)").eq(0).text()
+            _status = match("完|連載中", _status, 0)
+            status = when (_status) {
                 "完" -> SManga.COMPLETED
                 "連載中" -> SManga.ONGOING
                 else -> SManga.UNKNOWN
@@ -163,49 +166,40 @@ class comicbus : ConfigurableSource, HttpSource() {
     // Chapters
 
     override fun chapterListRequest(manga: SManga): Request {
-        return GET("$apiUrl/comic/" + manga.url + ".html", headers)
+        return GET("$baseUrl/comic/${manga.url}.html", headers)
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        var result = bodyWithCharset(response)
-        var ourl = response.request.url.toString()
-        ourl = ourl.substring(31, ourl.length - 5)
-        if (match("(<!--ch-->).+", result, 1) != null) {
-            result = result.replace("<!--ch-->".toRegex(), "|")
-        }
-        if (result.indexOf("|") == 2) {
-            result = result.substring(3)
-        }
+        val result = asJsoupWithCharset(response)
+        val date = parseDate(result.select("p:contains(作者)").first())
+        val chapter = mutableListOf<SChapter>()
         val chapters = mutableListOf<SChapter>()
-        if (result.contains("|")) {
-            val _result = result.split("\\|".toRegex()).toTypedArray()
-            for (m in _result.indices) {
-                val _name = match("\\d+ (.*)", _result[m], 1)
-                val _fanwai = match("8\\d{3}", _result[m], 0)
-                if (_name != null && _fanwai != null) {
+        result.select("#div_li2 td:has(a)").map { element ->
+            val _class = element.select("a").attr("class")
+            if (_class == "Vol" || _class == "Ch") {
+                val id = element.select("a").attr("id")
+                val _fanwai = match("8\\d{3}", id, 0)
+                if (_fanwai != null) {
+                    chapter.add(
+                        SChapter.create().apply {
+                            name = element.select("a").text()
+                            url = id.substring(1)
+                            scanlator = match("'(.*)-\\d+", element.select("a").attr("onclick"), 1)
+                        }
+                    )
+                } else {
                     chapters.add(
                         SChapter.create().apply {
-                            name = _name
-                            url = m.toString()
-                            scanlator = ourl
+                            name = element.select("a").text()
+                            url = id.substring(1)
+                            scanlator = match("'(.*)-\\d+", element.select("a").attr("onclick"), 1)
                         }
                     )
                 }
             }
-            for (m in _result.indices) {
-                val _name = match("\\d+ (.*)", _result[m], 1)
-                val _fanwai = match("8\\d{3}", _result[m], 0)
-                if (_name != null && _fanwai == null) {
-                    chapters.add(
-                        SChapter.create().apply {
-                            name = _name
-                            url = m.toString()
-                            scanlator = ourl
-                        }
-                    )
-                }
-            }
-        } else {
+        }
+        chapters.addAll(chapter)
+        if (chapters.isEmpty()) {
             chapters.add(
                 SChapter.create().apply {
                     name = "该条目为动画"
@@ -213,7 +207,7 @@ class comicbus : ConfigurableSource, HttpSource() {
                 }
             )
         }
-        chapters.reverse()
+        chapters.first().date_upload = date
         return chapters
     }
 
@@ -221,14 +215,14 @@ class comicbus : ConfigurableSource, HttpSource() {
     override fun pageListRequest(chapter: SChapter): Request {
         cid = chapter.scanlator!!
         path = chapter.url
-        return GET("$apiUrl/comics/" + chapter.scanlator + ".html", headers)
+        return GET("$apiUrl/comics/${chapter.scanlator}.html", headers)
     }
 
     override fun pageListParse(response: Response): List<Page> {
         val html = bodyWithCharset(response)
         val rresult: Array<String> = html.split("\\|".toRegex()).toTypedArray()
         val num: Int = path.toInt()
-        val result = rresult[num]
+        val result = rresult[num - 1]
         val r = result.split(" ".toRegex()).toTypedArray()
         val name = r[0]
         val imgserver = r[1]
@@ -423,4 +417,6 @@ class comicbus : ConfigurableSource, HttpSource() {
     fun asJsoupWithCharset(response: Response): org.jsoup.nodes.Document {
         return Jsoup.parse(bodyWithCharset(response), response.request.url.toString())
     }
+
+    private fun parseDate(element: Element): Long = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).parse(match("\\d{4}-\\d{2}-\\d{2}", element.text(), 0)!!)?.time ?: 0
 }
