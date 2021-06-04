@@ -222,7 +222,12 @@ class comicbus : ConfigurableSource, HttpSource() {
         val html = bodyWithCharset(response)
         val rresult: Array<String> = html.split("\\|".toRegex()).toTypedArray()
         val num: Int = path.toInt()
-        val result = rresult[num - 1]
+        var result = ""
+        if (num == 0) {
+            result = rresult[num]
+        } else {
+            result = rresult[num - 1]
+        }
         val r = result.split(" ".toRegex()).toTypedArray()
         val name = r[0]
         val imgserver = r[1]
