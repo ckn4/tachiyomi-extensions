@@ -38,11 +38,11 @@ class Dmzjs : ConfigurableSource, HttpSource() {
     override val lang = "zh"
     override val supportsLatest = true
     override val name = "动漫之家S"
-    override val baseUrl = "https://m.dmzj1.com"
-    private val v3apiUrl = "https://v3api.dmzj1.com"
+    override val baseUrl = "https://m.dmzj.com"
+    private val v3apiUrl = "https://v3api.dmzj.com"
     private val apiUrl = "https://api.dmzj.com"
     private val oldPageListApiUrl = "https://m.dmzj.com/chapinfo"
-    private val imageCDNUrl = "https://images.dmzj1.com"
+    private val imageCDNUrl = "https://images.dmzj.com"
 
     private fun cleanUrl(url: String) = if (url.startsWith("//"))
         "https:$url"
@@ -72,7 +72,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
         .build()
 
     override fun headersBuilder() = Headers.Builder().apply {
-        set("Referer", "https://www.dmzj1.com/")
+        set("Referer", "https://www.dmzj.com/")
         set(
             "User-Agent",
             "Mozilla/5.0 (Linux; Android 10) " +
@@ -175,7 +175,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         if (query != "") {
-            val uri = Uri.parse("http://s.acg.dmzj1.com/comicsum/search.php").buildUpon()
+            val uri = Uri.parse("http://s.acg.dmzj.com/comicsum/search.php").buildUpon()
             uri.appendQueryParameter("s", query)
             return GET(uri.toString())
         } else {
@@ -304,7 +304,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
                         SChapter.create().apply {
                             name = "$prefix: ${chapter.getString("chapter_title")}"
                             date_upload = chapter.getString("updatetime").toLong() * 1000 // milliseconds
-                            url = "https://api.m.dmzj1.com/comic/chapter/$cid/${chapter.getString("chapter_id")}.html"
+                            url = "https://api.m.dmzj.com/comic/chapter/$cid/${chapter.getString("chapter_id")}.html"
                         }
                     )
                 }
@@ -335,7 +335,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
             // some chapters are hidden and won't return a JSONObject from api.m.dmzj, have to get them through v3api (but images won't be as HQ)
             try {
                 val obj = JSONObject(response.body!!.string())
-                obj.getJSONObject("chapter").getJSONArray("page_url") // api.m.dmzj1.com already return HD image url
+                obj.getJSONObject("chapter").getJSONArray("page_url") // api.m.dmzj.com already return HD image url
             } catch (_: Exception) {
                 // example url: http://v3api.dmzj.com/chapter/44253/101852.json
                 val url = response.request.url.toString()
@@ -343,13 +343,13 @@ class Dmzjs : ConfigurableSource, HttpSource() {
                     .replace("comic/", "")
                     .replace(".html", ".json")
                 val obj = client.newCall(GET(url, headers)).execute().let { JSONObject(it.body!!.string()) }
-                obj.getJSONArray("page_url_hd") // page_url in v3api.dmzj1.com will return compressed image, page_url_hd will return HD image url as api.m.dmzj1.com does.
+                obj.getJSONArray("page_url_hd") // page_url in v3api.dmzj.com will return compressed image, page_url_hd will return HD image url as api.m.dmzj.com does.
             } catch (_: Exception) {
                 // Fallback to old api
                 // example url: https://m.dmzj.com/chapinfo/44253/101852.html
                 val url = response.request.url.toString()
                     .replaceFirst("api.", "")
-                    .replaceFirst(".dmzj1.", ".dmzj.")
+                    .replaceFirst(".dmzj.", ".dmzj.")
                     .replaceFirst("comic/chapter", "chapinfo")
                 val obj = client.newCall(GET(url, headers)).execute().let { JSONObject(it.body!!.string()) }
                 obj.getJSONArray("page_url")
@@ -358,7 +358,7 @@ class Dmzjs : ConfigurableSource, HttpSource() {
         val ret = ArrayList<Page>(arr.length())
         for (i in 0 until arr.length()) {
             ret.add(
-                Page(i, "", arr.getString(i).replace("http:", "https:").replace("dmzj.com", "dmzj1.com"))
+                Page(i, "", arr.getString(i).replace("http:", "https:").replace("dmzj.com", "dmzj.com"))
             )
         }
         return ret
