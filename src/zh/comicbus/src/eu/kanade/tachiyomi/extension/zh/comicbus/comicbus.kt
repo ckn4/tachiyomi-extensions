@@ -61,8 +61,9 @@ class comicbus : ConfigurableSource, HttpSource() {
         .retryOnConnectionFailure(true)
         .build()
 
-//    override fun headersBuilder() = super.headersBuilder()
-//        .add("Referer", baseUrl)
+    override fun headersBuilder() = super.headersBuilder()
+        .add("Referer", baseUrl)
+    // .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63")
 
     // Popular
 
@@ -94,9 +95,13 @@ class comicbus : ConfigurableSource, HttpSource() {
                     val uri = element.select("a").attr("href")
                     url = uri.substring(7, uri.length - 5)
                     val _img = element.select("img").attr("src").trim()
+                    val reg = "/(\\d+)m\\.jpg"
+                    val m = match(reg, _img, 1)
                     if (preferences.getBoolean(SHOW_Img_With_Api, false)) {
                         thumbnail_url = "$apiUrl/$_img"
                     } else thumbnail_url = "$baseUrl/$_img"
+                    val reg2 = Regex("/\\d+m\\.jpg")
+                    thumbnail_url = thumbnail_url?.replace(reg2, "/$m\\.jpg")
                 }
             )
         }
@@ -128,7 +133,12 @@ class comicbus : ConfigurableSource, HttpSource() {
                 title = _title
                 val uri = element.select("a").attr("href")
                 url = uri.substring(7, uri.length - 5)
-                thumbnail_url = "$baseUrl/" + element.select("img").attr("src").trim()
+                val _img = element.select("img").attr("src").trim()
+                val reg = "/(\\d+)m\\.jpg"
+                val m = match(reg, _img, 1)
+                thumbnail_url = "$baseUrl/" + _img
+                val reg2 = Regex("/\\d+m\\.jpg")
+                thumbnail_url = thumbnail_url?.replace(reg2, "/$m\\.jpg")
             }
         }
         return MangasPage(mangas, false)
@@ -149,7 +159,11 @@ class comicbus : ConfigurableSource, HttpSource() {
             }
             title = _title
             val _pic = document.select(".cover img").attr("src")
+            val reg = "/(\\d+)m\\.jpg"
+            val m = match(reg, _pic, 1)
             thumbnail_url = "$apiUrl$_pic"
+            val reg2 = Regex("/\\d+m\\.jpg")
+            thumbnail_url = thumbnail_url?.replace(reg2, "/$m\\.jpg")
             description = document.select(".item_show_detail .full_text").text().substring(2).trim()
             val _author = document.select("p:contains(作者)").eq(0).text()
             author = match("作者(.*)", _author, 1)
@@ -225,6 +239,8 @@ class comicbus : ConfigurableSource, HttpSource() {
         var result = ""
         if (num == 0) {
             result = rresult[num]
+        } else if (num >= 8000) {
+            result = rresult[rresult.size - (num - 8000)]
         } else {
             result = rresult[num - 1]
         }
