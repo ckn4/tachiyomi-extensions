@@ -44,8 +44,8 @@ class comicbus : ConfigurableSource, HttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(baseUrl.toHttpUrlOrNull()!!, preferences.getString(MAINSITE_RATELIMIT_PREF, "1")!!.toInt())
-    private val apiRateLimitInterceptor = SpecificHostRateLimitInterceptor(apiUrl.toHttpUrlOrNull()!!, preferences.getString(API_RATELIMIT_PREF, "2")!!.toInt())
+    private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(baseUrl.toHttpUrlOrNull()!!, preferences.getString(MAINSITE_RATELIMIT_PREF, "10")!!.toInt())
+    private val apiRateLimitInterceptor = SpecificHostRateLimitInterceptor(apiUrl.toHttpUrlOrNull()!!, preferences.getString(API_RATELIMIT_PREF, "10")!!.toInt())
     private val imageCDNRateLimitInterceptor1 = SpecificHostRateLimitInterceptor(imageServer[0].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
     private val imageCDNRateLimitInterceptor2 = SpecificHostRateLimitInterceptor(imageServer[1].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())
     private val imageCDNRateLimitInterceptor3 = SpecificHostRateLimitInterceptor(imageServer[2].toHttpUrlOrNull()!!, preferences.getString(IMAGE_CDN_RATELIMIT_PREF, "2")!!.toInt())

@@ -153,9 +153,9 @@ class kissaways : ParsedHttpSource() {
         val infoElement = document.select("div.row").first()
 
         return SManga.create().apply {
-            infoElement.select("li a.btn-info").text().let {
-                if (it.contains("Updating", true).not()) author = it
-            }
+            author = infoElement.select("li a.btn-info").eachText().filter {
+                it.equals("Updating", true).not()
+            }.joinToString().takeIf { it.isNotBlank() }
             genre = infoElement.select("li a.btn-danger").joinToString { it.text() }
             status = parseStatus(infoElement.select("li a.btn-success").first()?.text())
             description = document.select("div.detail .content, div.row ~ div.row:has(h3:first-child):contains(Description) p, div.sContent, .summary-content p").text().replace("Updating", "").trim()
