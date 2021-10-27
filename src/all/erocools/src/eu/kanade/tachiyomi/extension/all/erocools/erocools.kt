@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.all.erocool
+package eu.kanade.tachiyomi.extension.all.erocools
 
 import android.util.Log
 import eu.kanade.tachiyomi.annotations.Nsfw
@@ -17,8 +17,8 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 @Nsfw
-class erocool : HttpSource() {
-    override val name: String = "Erocool"
+class erocools : HttpSource() {
+    override val name: String = "Erocools"
     override val lang: String = "all"
     override val supportsLatest: Boolean = true
     override val baseUrl: String = "https://ja.erocool.net"

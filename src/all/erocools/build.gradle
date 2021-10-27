@@ -2,9 +2,9 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 ext {
-    extName = 'Erocool'
-    pkgNameSuffix = 'all.erocool'
-    extClass = '.erocool'
+    extName = 'Erocools'
+    pkgNameSuffix = 'all.erocools'
+    extClass = '.erocools'
     extVersionCode = 1
     libVersion = '1.2'
     containsNsfw = true
