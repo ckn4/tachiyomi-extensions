@@ -56,6 +56,8 @@ jobs:
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         with:
+          build-root-directory: master
+          wrapper-directory: master
           arguments: assembleRelease
           
       - name: Upload "${{ matrix.lang }}" APKs
