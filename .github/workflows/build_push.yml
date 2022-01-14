@@ -76,6 +76,17 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           path: ~/apk-artifacts
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          path: master
           
       - name: clone project keystore
         uses: actions/checkout@v2
@@ -93,17 +104,6 @@ jobs:
             ${{ secrets.ALIAS }} \
             ${{ secrets.KEY_STORE_PASSWORD }} \
             ${{ secrets.KEY_PASSWORD }}
-            
-      - name: Set up JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-
-      - name: Checkout master branch
-        uses: actions/checkout@v2
-        with:
-          ref: master
-          path: master
           
       - name: Create repo artifacts
         if: github.repository == 'ckn4/tachiyomi-extensions'
