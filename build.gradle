@@ -26,6 +26,4 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-test {
-    jvmArgs "-noverify"
-}
+tasks.withType(Test) { jvmArgs += "-noverify" }
