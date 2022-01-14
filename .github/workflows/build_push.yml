@@ -10,6 +10,11 @@ jobs:
     name: Validate Gradle Wrapper
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+          all_but_latest: true    
       - name: Clone repo
         uses: actions/checkout@v2
 
@@ -25,11 +30,6 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]')"
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.8.0
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout master branch
         uses: actions/checkout@v2
         with:
@@ -46,15 +46,16 @@ jobs:
           cd master
           mkdir -p ~/.gradle
           cp .github/runner-files/ci-gradle.properties ~/.gradle/gradle.properties
+          echo ${{ secrets.SIGNING_KEY }} | base64 -d > signingkey.jks
 
-      - name: Build extensions
-        uses: eskatos/gradle-command-action@v1
+      - name: Build "${{ matrix.lang }}" extensions
+        uses: gradle/gradle-command-action@v2
         env:
           CI_MATRIX_LANG: ${{ matrix.lang }}
-          CI_PUSH: "true"
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         with:
-          build-root-directory: master
-          wrapper-directory: master
           arguments: assembleRelease
           
       - name: Upload "${{ matrix.lang }}" APKs
@@ -64,6 +65,9 @@ jobs:
           name: "individual-${{ matrix.lang }}-apks"
           path: "**/*.apk"
           retention-days: 1
+
+      - name: Clean up CI files
+        run: rm signingkey.jks
           
   publish_repo:
     name: Publish repo
@@ -88,27 +92,11 @@ jobs:
           ref: master
           path: master
           
-      - name: clone project keystore
-        uses: actions/checkout@v2
-        with:
-          repository: ckn4/signapp
-          path: keystore
-          token: ${{secrets.GIT_TOKEN}}
-          ref: master
-
-      - name: Sign APKs
-        if: github.repository == 'ckn4/tachiyomi-extensions'
-        run: |
-          cd master
-          ./.github/scripts/sign-apks.sh \
-            ${{ secrets.ALIAS }} \
-            ${{ secrets.KEY_STORE_PASSWORD }} \
-            ${{ secrets.KEY_PASSWORD }}
-          
       - name: Create repo artifacts
         if: github.repository == 'ckn4/tachiyomi-extensions'
         run: |
           cd master
+          ./.github/scripts/move-apks.sh
           INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/tachiyomiorg/tachiyomi-extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
           curl -L "$INSPECTOR_LINK" -o ./Inspector.jar
           java -jar ./Inspector.jar "apk" "output.json" "tmp"
