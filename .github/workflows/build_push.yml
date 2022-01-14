@@ -102,7 +102,7 @@ jobs:
           chmod +x .github/scripts/move-apks.sh
           ./.github/scripts/move-apks.sh
           curl -L "https://github.com/tachiyomiorg/tachiyomi-extensions-inspector/releases/download/v0.4.0/Tachiyomi.Extensions.Inspector-v0.4.0-r1.jar" -o ./Inspector.jar
-          java -jar ./Inspector.jar "apk" "output.json" "tmp"
+          java -noverify -jar ./Inspector.jar "apk" "output.json" "tmp"
           ./.github/scripts/create-repo.sh
 
       - name: Checkout repo branch
