@@ -87,7 +87,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 10
+          java-version: 1.8
 
       - name: Checkout master branch
         uses: actions/checkout@v2
@@ -101,8 +101,7 @@ jobs:
           cd master
           chmod +x .github/scripts/move-apks.sh
           ./.github/scripts/move-apks.sh
-          INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/tachiyomiorg/tachiyomi-extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
-          curl -L "$INSPECTOR_LINK" -o ./Inspector.jar
+          curl -L "https://github.com/tachiyomiorg/tachiyomi-extensions-inspector/releases/download/v0.4.0/Tachiyomi.Extensions.Inspector-v0.4.0-r1.jar" -o ./Inspector.jar
           java -jar ./Inspector.jar "apk" "output.json" "tmp"
           ./.github/scripts/create-repo.sh
 
