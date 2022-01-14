@@ -20,6 +20,9 @@ jobs:
     name: Build extension repo
     needs: check_wrapper
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]')"
+    strategy:
+      matrix:
+        lang: [all, en, ar, ca, de, es, fr, id, it, ja, ko, pt, ru, th, tr, vi, zh, bg, hi, pl]
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
@@ -48,13 +51,11 @@ jobs:
         uses: eskatos/gradle-command-action@v1
         env:
           CI_PUSH: "true"
+          CI_MATRIX_LANG: ${{ matrix.lang }}
         with:
           build-root-directory: master
           wrapper-directory: master
           arguments: assembleRelease
-          wrapper-cache-enabled: true
-          dependencies-cache-enabled: true
-          configuration-cache-enabled: true
 
       - name: clone project keystore
         uses: actions/checkout@v2
@@ -72,7 +73,39 @@ jobs:
             ${{ secrets.ALIAS }} \
             ${{ secrets.KEY_STORE_PASSWORD }} \
             ${{ secrets.KEY_PASSWORD }}
+            
+      - name: Upload "${{ matrix.lang }}" APKs
+        uses: actions/upload-artifact@v2
+        if: "github.repository == 'ckn4/tachiyomi-extensions'"
+        with:
+          name: "individual-${{ matrix.lang }}-apks"
+          path: "**/*.apk"
+          retention-days: 1
+          
+  publish_repo:
+    name: Publish repo
+    needs:
+      - build
+    if: "github.repository == 'ckn4/tachiyomi-extensions'"
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Download APK artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ~/apk-artifacts
 
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          path: master
+          
       - name: Create repo artifacts
         if: github.repository == 'ckn4/tachiyomi-extensions'
         run: |
