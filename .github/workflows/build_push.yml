@@ -49,6 +49,8 @@ jobs:
         env:
           CI_PUSH: "true"
         with:
+          build-root-directory: master
+          wrapper-directory: master
           arguments: assembleRelease
 
       - name: clone project keystore
