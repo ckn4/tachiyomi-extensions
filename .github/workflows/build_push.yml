@@ -100,6 +100,7 @@ jobs:
         if: github.repository == 'ckn4/tachiyomi-extensions'
         run: |
           cd master
+          chmod +x .github/scripts/move-apks.sh
           ./.github/scripts/move-apks.sh
           INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/tachiyomiorg/tachiyomi-extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
           curl -L "$INSPECTOR_LINK" -o ./Inspector.jar
