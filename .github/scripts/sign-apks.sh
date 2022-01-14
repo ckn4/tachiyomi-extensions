@@ -4,6 +4,7 @@ set -e
 TOOLS="$(ls -d ${ANDROID_HOME}/build-tools/* | tail -1)"
 
 shopt -s globstar nullglob extglob
+cp -R ~/apk-artifacts/ $PWD
 APKS=( **/*".apk" )
 
 # Fail if too little extensions seem to have been built

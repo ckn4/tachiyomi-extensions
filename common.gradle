@@ -2,13 +2,6 @@ apply plugin: 'org.jmailen.kotlinter'
 
 android {
     compileSdkVersion Config.compileSdk
-    buildToolsVersion Config.buildTools
-
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
-    }
 
     sourceSets {
         main {
@@ -29,7 +22,7 @@ android {
         targetSdkVersion Config.targetSdk
         applicationIdSuffix pkgNameSuffix
         versionCode extVersionCode
-        versionName "$libVersion.$extVersionCode"
+        versionName project.ext.properties.getOrDefault("libVersion", "1.2") + ".$extVersionCode"
         setProperty("archivesBaseName", "tachiyomi-$pkgNameSuffix-v$versionName")
         manifestPlaceholders = [
                 appName : "Tachiyomi: $extName",
@@ -37,6 +30,22 @@ android {
                 extFactory: project.ext.properties.getOrDefault("extFactory", ""),
                 nsfw: project.ext.properties.getOrDefault("containsNsfw", false) ? 1 : 0,
         ]
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file("signingkey.jks")
+            storePassword System.getenv("KEY_STORE_PASSWORD")
+            keyAlias System.getenv("ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 
     dependenciesInfo {
@@ -58,6 +67,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+        freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
     }
 }
 
