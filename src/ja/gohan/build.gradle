@@ -1,0 +1,17 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
+
+ext {
+    extName = 'Gohan'
+    pkgNameSuffix = 'ja.gohan'
+    extClass = '.gohan'
+    extVersionCode = 1
+    libVersion = '1.2'
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+}
+
+apply from: "$rootDir/common.gradle"
