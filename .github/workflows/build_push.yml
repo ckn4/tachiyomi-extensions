@@ -10,6 +10,11 @@ jobs:
     name: Validate Gradle Wrapper
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+          all_but_latest: true    
       - name: Clone repo
         uses: actions/checkout@v2
 
@@ -19,14 +24,12 @@ jobs:
   build:
     name: Build extension repo
     needs: check_wrapper
+    strategy:
+      matrix:
+        lang: [all, en, ja, zh]    
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]')"
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.8.0
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout master branch
         uses: actions/checkout@v2
         with:
@@ -43,51 +46,71 @@ jobs:
           cd master
           mkdir -p ~/.gradle
           cp .github/runner-files/ci-gradle.properties ~/.gradle/gradle.properties
+          echo ${{ secrets.SIGNING_KEY }} | base64 -d > signingkey.jks
 
-      - name: Build extensions
-        uses: eskatos/gradle-command-action@v1
+      - name: Build "${{ matrix.lang }}" extensions
+        uses: gradle/gradle-command-action@v2
         env:
-          CI_PUSH: "true"
+          CI_MATRIX_LANG: ${{ matrix.lang }}
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         with:
           build-root-directory: master
-          wrapper-directory: master
           arguments: assembleRelease
-          wrapper-cache-enabled: true
-          dependencies-cache-enabled: true
-          configuration-cache-enabled: true
+          
+      - name: Upload "${{ matrix.lang }}" APKs
+        uses: actions/upload-artifact@v2
+        if: "github.repository == 'ckn4/tachiyomi-extensions'"
+        with:
+          name: "individual-${{ matrix.lang }}-apks"
+          path: "**/*.apk"
+          retention-days: 1
 
-      - name: clone project keystore
+      - name: Clean up CI files
+        run: |
+          cd master
+          rm signingkey.jks
+          
+  publish_repo:
+    name: Publish repo
+    needs:
+      - build
+    if: "github.repository == 'ckn4/tachiyomi-extensions'"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ~/apk-artifacts
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Checkout master branch
         uses: actions/checkout@v2
         with:
-          repository: ckn4/signapp
-          path: keystore
-          token: ${{secrets.GIT_TOKEN}}
           ref: master
-
-      - name: Sign APKs
-        if: github.repository == 'ckn4/tachiyomi-extensions'
-        run: |
-          cd master
-          ./.github/scripts/sign-apks.sh \
-            ${{ secrets.ALIAS }} \
-            ${{ secrets.KEY_STORE_PASSWORD }} \
-            ${{ secrets.KEY_PASSWORD }}
-
+          path: master
+          
       - name: Create repo artifacts
-        if: github.repository == 'ckn4/tachiyomi-extensions'
         run: |
           cd master
+          chmod +x .github/scripts/move-apks.sh
+          ./.github/scripts/move-apks.sh
+          curl -L "https://github.com/tachiyomiorg/tachiyomi-extensions-inspector/releases/download/v0.4.0/Tachiyomi.Extensions.Inspector-v0.4.0-r1.jar" -o ./Inspector.jar
+          java -noverify -jar ./Inspector.jar "apk" "output.json" "tmp"
           ./.github/scripts/create-repo.sh
 
       - name: Checkout repo branch
-        if: github.repository == 'ckn4/tachiyomi-extensions'
         uses: actions/checkout@v2
         with:
           ref: repo
           path: repo
 
       - name: Deploy repo
-        if: github.repository == 'ckn4/tachiyomi-extensions'
         run: |
           cd repo
           ../master/.github/scripts/commit-repo.sh
