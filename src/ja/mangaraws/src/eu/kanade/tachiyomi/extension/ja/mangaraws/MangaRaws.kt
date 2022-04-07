@@ -63,7 +63,7 @@ class MangaRaws : ParsedHttpSource() {
         // genre = document.select("p:has(strong)").joinToString { it.text() }
         // description = document.select("p:has(strong)").first().text()
         description = document.select("p:has(strong)").joinToString { it.text() }
-        // thumbnail_url = document.select(".wp-block-image img").attr("abs:src")
+        thumbnail_url = document.select("p:has(img) img").attr("src")
     }
 
     override fun chapterListSelector() = ".list-scoll a"
