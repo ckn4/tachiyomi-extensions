@@ -1,18 +1,18 @@
 [
   {
-    "name": "Tachiyomi: Erocools",
-    "pkg": "eu.kanade.tachiyomi.extension.all.erocools",
-    "apk": "tachiyomi-all.erocools-v1.2.1.apk",
-    "lang": "all",
+    "name": "Tachiyomi: Gohan",
+    "pkg": "eu.kanade.tachiyomi.extension.ja.gohan",
+    "apk": "tachiyomi-ja.gohan-v1.2.1.apk",
+    "lang": "ja",
     "code": 1,
     "version": "1.2.1",
-    "nsfw": 1,
+    "nsfw": 0,
     "sources": [
       {
-        "name": "Erocools",
-        "lang": "all",
-        "id": "1628386160186903949",
-        "baseUrl": "https://ja.erocool.net"
+        "name": "MangaGohans",
+        "lang": "ja",
+        "id": "5707622744315598004",
+        "baseUrl": "https://gokumanga.com/"
       }
     ]
   },
@@ -36,10 +36,10 @@
   {
     "name": "Tachiyomi: MangaRaws",
     "pkg": "eu.kanade.tachiyomi.extension.ja.mangaraws",
-    "apk": "tachiyomi-ja.mangaraws-v1.2.4.apk",
+    "apk": "tachiyomi-ja.mangaraws-v1.2.5.apk",
     "lang": "ja",
-    "code": 4,
-    "version": "1.2.4",
+    "code": 5,
+    "version": "1.2.5",
     "nsfw": 0,
     "sources": [
       {
@@ -81,23 +81,6 @@
         "lang": "zh",
         "id": "1677823598065853565",
         "baseUrl": "https://www.copymanga.org"
-      }
-    ]
-  },
-  {
-    "name": "Tachiyomi: Dmzjs",
-    "pkg": "eu.kanade.tachiyomi.extension.zh.dmzjs",
-    "apk": "tachiyomi-zh.dmzjs-v1.2.4.apk",
-    "lang": "zh",
-    "code": 4,
-    "version": "1.2.4",
-    "nsfw": 0,
-    "sources": [
-      {
-        "name": "动漫之家S",
-        "lang": "zh",
-        "id": "5614217074883720183",
-        "baseUrl": "https://m.dmzj.com"
       }
     ]
   },
