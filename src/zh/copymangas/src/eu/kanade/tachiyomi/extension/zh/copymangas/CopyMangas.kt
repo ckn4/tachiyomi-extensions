@@ -38,14 +38,16 @@ import javax.net.ssl.X509TrustManager
 class CopyMangas : ConfigurableSource, HttpSource() {
 
     override val name = "拷贝漫画s"
-    override val baseUrl = "https://www.copymanga.com"
+    override val baseUrl = "https://www.copymanga.org"
     override val lang = "zh"
     override val supportsLatest = true
     private val popularLatestPageSize = 50 // default
     private val searchPageSize = 12 // default
 
-    val replaceToMirror2 = Regex("1767566263\\.rsc\\.cdn77\\.org")
-    val replaceToMirror = Regex("1025857477\\.rsc\\.cdn77\\.org")
+    val replaceToMirror2 = Regex("mirror277\\.mangafuna\\.xyz:12001")
+    val replaceToMirror = Regex("mirror77\\.mangafuna\\.xyz:12001")
+    // val replaceToMirror2 = Regex("1767566263\\.rsc\\.cdn77\\.org")
+    // val replaceToMirror = Regex("1025857477\\.rsc\\.cdn77\\.org")
 
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -115,9 +117,9 @@ class CopyMangas : ConfigurableSource, HttpSource() {
         val manga = SManga.create().apply {
             title = _title
             var picture = document.select("div.comicParticulars-title-left img").first().attr("data-src")
-            if (!preferences.getBoolean(change_cdn_tomainland, false)) {
-                picture = replaceToMirror2.replace(picture, "mirror2.mangafunc.fun")
-                picture = replaceToMirror.replace(picture, "mirror.mangafunc.fun")
+            if (preferences.getBoolean(CHANGE_CDN_OVERSEAS, false)) {
+                picture = replaceToMirror2.replace(picture, "mirror2.mangafunc.fun:443")
+                picture = replaceToMirror.replace(picture, "mirror.mangafunc.fun:443")
             }
             thumbnail_url = picture
             description = document.select("div.comicParticulars-synopsis p.intro").first().text().trim()
@@ -194,9 +196,9 @@ class CopyMangas : ConfigurableSource, HttpSource() {
         val ret = ArrayList<Page>(pageArray.length())
         for (i in 0 until pageArray.length()) {
             var page = pageArray.getJSONObject(i).getString("url")
-            if (!preferences.getBoolean(change_cdn_tomainland, false)) {
-                page = replaceToMirror2.replace(page, "mirror2.mangafunc.fun")
-                page = replaceToMirror.replace(page, "mirror.mangafunc.fun")
+            if (preferences.getBoolean(CHANGE_CDN_OVERSEAS, false)) {
+                page = replaceToMirror2.replace(page, "mirror2.mangafunc.fun:443")
+                page = replaceToMirror.replace(page, "mirror.mangafunc.fun:443")
             }
             ret.add(Page(i, "", page))
         }
@@ -305,14 +307,15 @@ class CopyMangas : ConfigurableSource, HttpSource() {
     private fun parseSearchMangaWithFilterOrPopularOrLatestResponse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select("div.exemptComicList div.exemptComicItem").map { element ->
-            mangaFromPage(element)
-        }
+        val mangas = document.select("div.exemptComicList div.exemptComic-box").first().attr("list")
+
+        val comicArray = JSONArray(mangas)
 
         // There is always a next pager, so use itemCount to check. XD
-        val hasNextPage = mangas.size == popularLatestPageSize
+        val hasNextPage = comicArray.length() == popularLatestPageSize
+        val ret = mangaListFromJsonArray(comicArray)
 
-        return MangasPage(mangas, hasNextPage)
+        return MangasPage(ret, hasNextPage)
     }
 
     private fun parseSearchMangaResponseAsJson(response: Response): MangasPage {
@@ -324,7 +327,14 @@ class CopyMangas : ConfigurableSource, HttpSource() {
             return MangasPage(listOf(), false)
         }
 
+        val ret = mangaListFromJsonArray(comicArray)
+
+        return MangasPage(ret, comicArray.length() == searchPageSize)
+    }
+
+    private fun mangaListFromJsonArray(comicArray: JSONArray): ArrayList<SManga> {
         val ret = ArrayList<SManga>(comicArray.length())
+
         for (i in 0 until comicArray.length()) {
             val obj = comicArray.getJSONObject(i)
             val authorArray = obj.getJSONArray("author")
@@ -336,9 +346,9 @@ class CopyMangas : ConfigurableSource, HttpSource() {
                 SManga.create().apply {
                     title = _title
                     var picture = obj.getString("cover")
-                    if (!preferences.getBoolean(change_cdn_tomainland, false)) {
-                        picture = replaceToMirror2.replace(picture, "mirror2.mangafunc.fun")
-                        picture = replaceToMirror.replace(picture, "mirror.mangafunc.fun")
+                    if (preferences.getBoolean(CHANGE_CDN_OVERSEAS, false)) {
+                        picture = replaceToMirror2.replace(picture, "mirror2.mangafunc.fun:443")
+                        picture = replaceToMirror.replace(picture, "mirror.mangafunc.fun:443")
                     }
                     thumbnail_url = picture
                     author = Array<String?>(authorArray.length()) { i -> authorArray.getJSONObject(i).getString("name") }.joinToString(", ")
@@ -348,28 +358,7 @@ class CopyMangas : ConfigurableSource, HttpSource() {
             )
         }
 
-        return MangasPage(ret, comicArray.length() == searchPageSize)
-    }
-
-    private fun mangaFromPage(element: Element): SManga {
-        val manga = SManga.create()
-        element.select("div.exemptComicItem-img > a > img").first().let {
-            var picture = it.attr("data-src")
-            if (!preferences.getBoolean(change_cdn_tomainland, false)) {
-                picture = replaceToMirror2.replace(picture, "mirror2.mangafunc.fun")
-                picture = replaceToMirror.replace(picture, "mirror.mangafunc.fun")
-            }
-            manga.thumbnail_url = picture
-        }
-        element.select("div.exemptComicItem-txt > a").first().let {
-            manga.setUrlWithoutDomain(it.attr("href"))
-            var _title: String = it.select("p").first().text().trim()
-            if (preferences.getBoolean(SHOW_Simplified_Chinese_TITLE_PREF, false)) {
-                _title = ChineseUtils.toSimplified(_title)
-            }
-            manga.title = _title
-        }
-        return manga
+        return ret
     }
 
     private fun fillChapters(chapterGroup: JSONObject, retChapter: ArrayList<SChapter>, comicPathWord: String?) {
@@ -469,13 +458,13 @@ class CopyMangas : ConfigurableSource, HttpSource() {
             }
         }
         val cdnPreference = androidx.preference.CheckBoxPreference(screen.context).apply {
-            key = change_cdn_tomainland
-            title = "转换图片CDN为国内"
-            summary = "加载图片使用国内CDN,可以使用代理的情况下请不要打开此选项"
+            key = CHANGE_CDN_OVERSEAS
+            title = "转换图片CDN为境外CDN"
+            summary = "加载图片使用境外CDN，使用代理的情况下推荐打开此选项（境外CDN可能无法查看一些刚刚更新的漫画，需要等待资源更新到CDN）"
 
             setOnPreferenceChangeListener { _, newValue ->
                 try {
-                    val setting = preferences.edit().putBoolean(change_cdn_tomainland, newValue as Boolean).commit()
+                    val setting = preferences.edit().putBoolean(CHANGE_CDN_OVERSEAS, newValue as Boolean).commit()
                     setting
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -489,7 +478,7 @@ class CopyMangas : ConfigurableSource, HttpSource() {
 
     companion object {
         private const val SHOW_Simplified_Chinese_TITLE_PREF = "showSCTitle"
-        private const val change_cdn_tomainland = "changeCDN"
+        private const val CHANGE_CDN_OVERSEAS = "changeCDN"
     }
 
     // Long log

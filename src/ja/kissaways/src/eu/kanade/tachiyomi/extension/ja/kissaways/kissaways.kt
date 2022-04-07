@@ -25,7 +25,7 @@ class kissaways : ParsedHttpSource() {
 
     override val name = "kissaways"
 
-    override val baseUrl = "https://kissaway.net"
+    override val baseUrl = "https://klmag.net"
 
     override val lang = "ja"
 

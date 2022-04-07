@@ -5,7 +5,7 @@ ext {
     extName = 'Comicbus'
     pkgNameSuffix = 'zh.comicbus'
     extClass = '.comicbus'
-    extVersionCode = 9
+    extVersionCode = 10
     libVersion = '1.2'
 }
 

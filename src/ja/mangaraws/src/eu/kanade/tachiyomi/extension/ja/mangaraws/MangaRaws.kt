@@ -15,7 +15,7 @@ import java.util.regex.Pattern
 
 class MangaRaws : ParsedHttpSource() {
     override val name = "MangaRaws"
-    override val baseUrl = "https://manga1001.com"
+    override val baseUrl = "https://mangaraw.co"
 
     override val lang = "ja"
 
@@ -29,19 +29,21 @@ class MangaRaws : ParsedHttpSource() {
         return super.headersBuilder().add("Referer", baseUrl)
     }
 
-    override fun popularMangaRequest(page: Int) = GET("$baseUrl/seachlist/page/$page/?cat=-1", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/top/?page=$page", headers)
 
-    override fun popularMangaSelector() = "article"
+    override fun popularMangaSelector() = ".rotate-img"
 
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
         setUrlWithoutDomain(element.select("a:has(img)").attr("href"))
         title = element.select("img").attr("alt").substringBefore("(Raw – Free)").trim()
-        thumbnail_url = element.select("img").attr("abs:src")
+        if (title.endsWith("(RAW – Free)"))
+            title = title.substringBefore("(RAW – Free)").trim()
+        thumbnail_url = baseUrl + element.select("img").attr("data-src")
     }
 
-    override fun popularMangaNextPageSelector() = ".next.page-numbers"
+    override fun popularMangaNextPageSelector() = ".nextpostslink"
 
-    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/newmanga/page/$page", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/page/$page", headers)
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
@@ -49,7 +51,7 @@ class MangaRaws : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = GET("$baseUrl/page/$page/?s=$query", headers)
+    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = GET("$baseUrl/?s=$query&page=$page", headers)
 
     override fun searchMangaSelector() = popularMangaSelector()
 
@@ -58,12 +60,13 @@ class MangaRaws : ParsedHttpSource() {
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        genre = document.select("p.has-text-color:has(strong) a").joinToString { it.text() }
-        description = document.select("p.has-text-color:not(:has(strong))").first().text()
-        thumbnail_url = document.select(".wp-block-image img").attr("abs:src")
+        // genre = document.select("p:has(strong)").joinToString { it.text() }
+        // description = document.select("p:has(strong)").first().text()
+        description = document.select("p:has(strong)").joinToString { it.text() }
+        // thumbnail_url = document.select(".wp-block-image img").attr("abs:src")
     }
 
-    override fun chapterListSelector() = ".chapList a"
+    override fun chapterListSelector() = ".list-scoll a"
 
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         setUrlWithoutDomain(element.attr("href"))
@@ -72,7 +75,7 @@ class MangaRaws : ParsedHttpSource() {
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        return document.select(".wp-block-image > img").mapIndexed { i, element ->
+        return document.select(".card-wrap > img").mapIndexed { i, element ->
             val attribute = if (element.hasAttr("data-src")) "data-src" else "src"
             Page(i, "", element.attr(attribute))
         }

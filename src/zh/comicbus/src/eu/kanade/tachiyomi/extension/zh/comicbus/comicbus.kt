@@ -22,7 +22,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -115,7 +114,7 @@ class comicbus : ConfigurableSource, HttpSource() {
         if (preferences.getBoolean(SERACH_WITH_TRAN, false)) {
             keyword = ChineseUtils.toTraditional(keyword)
         }
-        keyword = URLEncoder.encode(keyword, "big5")
+        // keyword = URLEncoder.encode(keyword, "big5")
         val queryuri = "$baseUrl/data/search.aspx?k=" + keyword + "&page=$page"
         return GET(queryuri, headers)
     }
@@ -430,7 +429,7 @@ class comicbus : ConfigurableSource, HttpSource() {
 
     fun bodyWithCharset(response: Response): String {
         val htmlBytes: ByteArray = response.body!!.bytes()
-        return String(htmlBytes, charset("big5"))
+        return String(htmlBytes, charset("utf-8"))
     }
 
     // asJsoup(big5)
