@@ -19,44 +19,44 @@
   {
     "name": "Tachiyomi: Kissaways",
     "pkg": "eu.kanade.tachiyomi.extension.ja.kissaways",
-    "apk": "tachiyomi-ja.kissaways-v1.2.6.apk",
+    "apk": "tachiyomi-ja.kissaways-v1.2.7.apk",
     "lang": "ja",
-    "code": 6,
-    "version": "1.2.6",
+    "code": 7,
+    "version": "1.2.7",
     "nsfw": 0,
     "sources": [
       {
         "name": "kissaways",
         "lang": "ja",
         "id": "4326144981387778681",
-        "baseUrl": "https://kissaway.net"
+        "baseUrl": "https://klmag.net"
       }
     ]
   },
   {
     "name": "Tachiyomi: MangaRaws",
     "pkg": "eu.kanade.tachiyomi.extension.ja.mangaraws",
-    "apk": "tachiyomi-ja.mangaraws-v1.2.3.apk",
+    "apk": "tachiyomi-ja.mangaraws-v1.2.4.apk",
     "lang": "ja",
-    "code": 3,
-    "version": "1.2.3",
+    "code": 4,
+    "version": "1.2.4",
     "nsfw": 0,
     "sources": [
       {
         "name": "MangaRaws",
         "lang": "ja",
         "id": "989073132433685121",
-        "baseUrl": "https://manga1001.com"
+        "baseUrl": "https://mangaraw.co"
       }
     ]
   },
   {
     "name": "Tachiyomi: Comicbus",
     "pkg": "eu.kanade.tachiyomi.extension.zh.comicbus",
-    "apk": "tachiyomi-zh.comicbus-v1.2.9.apk",
+    "apk": "tachiyomi-zh.comicbus-v1.2.10.apk",
     "lang": "zh",
-    "code": 9,
-    "version": "1.2.9",
+    "code": 10,
+    "version": "1.2.10",
     "nsfw": 0,
     "sources": [
       {
@@ -70,17 +70,17 @@
   {
     "name": "Tachiyomi: CopyMangas",
     "pkg": "eu.kanade.tachiyomi.extension.zh.copymangas",
-    "apk": "tachiyomi-zh.copymangas-v1.2.20.apk",
+    "apk": "tachiyomi-zh.copymangas-v1.2.24.apk",
     "lang": "zh",
-    "code": 20,
-    "version": "1.2.20",
+    "code": 24,
+    "version": "1.2.24",
     "nsfw": 0,
     "sources": [
       {
         "name": "拷贝漫画s",
         "lang": "zh",
         "id": "1677823598065853565",
-        "baseUrl": "https://www.copymanga.com"
+        "baseUrl": "https://www.copymanga.org"
       }
     ]
   },
