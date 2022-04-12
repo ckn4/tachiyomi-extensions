@@ -154,9 +154,9 @@ class gohan : ParsedHttpSource() {
      */
     open val useLoadMoreSearch = true
 
-    open fun searchFormBuilder(showOnlyManga: Boolean): FormBody.Builder = FormBody.Builder().apply {
+    open fun searchFormBuilder(page: Int, showOnlyManga: Boolean): FormBody.Builder = FormBody.Builder().apply {
         add("action", "madara_load_more")
-        add("page", "0")
+        add("page", (page - 1).toString())
         add("template", "madara-core/content/content-search")
         add("vars[paged]", "1")
         add("vars[template]", "archive")
@@ -164,7 +164,7 @@ class gohan : ParsedHttpSource() {
         add("vars[post_type]", "wp-manga")
         add("vars[post_status]", "publish")
         add("vars[manga_archives_item_layout]", "big_thumbnail")
-        add("vars[post_per_page]", "20")
+        add("vars[posts_per_page]", "20")
 
         if (filterNonMangaItems && showOnlyManga) {
             add("vars[meta_query][0][key]", "_wp_manga_chapter_type")
@@ -268,7 +268,7 @@ class gohan : ParsedHttpSource() {
         val showOnlyManga = filters.filterIsInstance<ShowOnlyMangaFilter>()
             .firstOrNull()?.state ?: true
 
-        val formBodyBuilder = searchFormBuilder(showOnlyManga).apply {
+        val formBodyBuilder = searchFormBuilder(page, showOnlyManga).apply {
             if (query.startsWith(URL_SEARCH_PREFIX)) {
                 add("vars[name]", query.removePrefix(URL_SEARCH_PREFIX))
 
@@ -574,7 +574,10 @@ class gohan : ParsedHttpSource() {
         return manga
     }
 
-    override fun searchMangaNextPageSelector(): String? = "div.nav-previous, nav.navigation-ajax, a.nextpostslink"
+    override fun searchMangaNextPageSelector(): String? = when {
+        useLoadMoreSearch -> popularMangaNextPageSelector()
+        else -> "div.nav-previous, nav.navigation-ajax, a.nextpostslink"
+    }
 
     // Manga Details Parse
 

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 ext {
-    extName = 'CoCoManhuas (OhManhua)'
+    extName = 'CoCoManhuas'
     pkgNameSuffix = 'zh.onemanhuas'
     extClass = '.Onemanhuas'
     extVersionCode = 11
