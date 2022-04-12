@@ -1,0 +1,15 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+ext {
+    extName = 'CoCoManhuas (OhManhua)'
+    pkgNameSuffix = 'zh.onemanhuas'
+    extClass = '.Onemanhuas'
+    extVersionCode = 11
+}
+
+dependencies {
+    implementation project(path: ':lib-ratelimit')
+}
+
+apply from: "$rootDir/common.gradle"
