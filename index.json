@@ -121,10 +121,10 @@
   {
     "name": "Tachiyomi: CoCoManhuas",
     "pkg": "eu.kanade.tachiyomi.extension.zh.onemanhuas",
-    "apk": "tachiyomi-zh.onemanhuas-v1.2.11.apk",
+    "apk": "tachiyomi-zh.onemanhuas-v1.2.12.apk",
     "lang": "zh",
-    "code": 11,
-    "version": "1.2.11",
+    "code": 12,
+    "version": "1.2.12",
     "nsfw": 0,
     "sources": [
       {
