@@ -6,6 +6,7 @@ ext {
     pkgNameSuffix = 'zh.onemanhuas'
     extClass = '.Onemanhuas'
     extVersionCode = 11
+    libVersion = '1.2'
 }
 
 dependencies {
