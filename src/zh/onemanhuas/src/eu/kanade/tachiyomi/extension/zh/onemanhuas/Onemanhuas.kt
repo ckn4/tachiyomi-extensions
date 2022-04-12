@@ -30,19 +30,17 @@ import java.util.regex.Pattern
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
-// Originally, the site was called One漫画. The name has been changing every once in awhile
 class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
-    override val id = 8252565807829914107
     override val lang = "zh"
     override val supportsLatest = true
-    override val name = "COCOManhuas"
+    override val name = "CoCoManhuas"
 
     // Preference setting
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override val baseUrl = preferences.getString("baseurl_self", "").toString()
+    override val baseUrl = "https://" + preferences.getString("baseurl_self", "").toString() + "/"
 
     // Client configs
     private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(
@@ -330,8 +328,8 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
         return Uri.encode(str, whitelistChar)
     }
 
-    override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val mainSiteRatePermitsPreference = ListPreference(screen.context).apply {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) {
+        ListPreference(screen.context).apply {
             key = MAINSITE_RATEPERMITS_PREF
             title = MAINSITE_RATEPERMITS_PREF_TITLE
             entries = MAINSITE_RATEPERMITS_PREF_ENTRIES_ARRAY
@@ -348,9 +346,9 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
                     false
                 }
             }
-        }
+        }.let(screen::addPreference)
 
-        val mainSiteRatePeriodPreference = ListPreference(screen.context).apply {
+        ListPreference(screen.context).apply {
             key = MAINSITE_RATEPERIOD_PREF
             title = MAINSITE_RATEPERIOD_PREF_TITLE
             entries = MAINSITE_RATEPERIOD_PREF_ENTRIES_ARRAY
@@ -367,13 +365,13 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
                     false
                 }
             }
-        }
+        }.let(screen::addPreference)
 
         EditTextPreference(screen.context).apply {
             key = "baseurl_self"
-            title = "自定义原站网址"
+            title = "自定义源站网址"
 
-            setDefaultValue("https://www.cocomanga.com/")
+            setDefaultValue("www.cocomanga.com")
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString("baseurl_self", newValue as String).commit()
@@ -432,9 +430,6 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
                 }
             }
         }.let(screen::addPreference)
-
-        screen.addPreference(mainSiteRatePermitsPreference)
-        screen.addPreference(mainSiteRatePeriodPreference)
     }
 
     companion object {
