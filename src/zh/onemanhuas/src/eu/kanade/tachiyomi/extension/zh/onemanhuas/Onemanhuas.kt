@@ -34,13 +34,13 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
     override val lang = "zh"
     override val supportsLatest = true
     override val name = "CoCoManhuas"
+    override val baseUrl = "https://www.cocomanga.com/"
 
-    // Preference setting
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override val baseUrl = "https://" + preferences.getString("baseurl_self", "").toString() + "/"
+    //override val baseUrl = "https://" + preferences.getString("baseurl_self", "").toString() + "/"
 
     // Client configs
     private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(
