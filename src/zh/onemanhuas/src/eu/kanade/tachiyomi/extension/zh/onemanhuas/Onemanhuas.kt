@@ -40,8 +40,6 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    //override val baseUrl = "https://" + preferences.getString("baseurl_self", "").toString() + "/"
-
     // Client configs
     private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(
         baseUrl.toHttpUrlOrNull()!!,
@@ -359,22 +357,6 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString(MAINSITE_RATEPERIOD_PREF, newValue as String).commit()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
-                }
-            }
-        }.let(screen::addPreference)
-
-        EditTextPreference(screen.context).apply {
-            key = "baseurl_self"
-            title = "自定义源站网址"
-
-            setDefaultValue("www.cocomanga.com")
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putString("baseurl_self", newValue as String).commit()
                     setting
                 } catch (e: Exception) {
                     e.printStackTrace()
