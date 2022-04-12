@@ -34,11 +34,13 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
     override val lang = "zh"
     override val supportsLatest = true
     override val name = "CoCoManhuas"
-    override val baseUrl = "https://www.cocomanga.com/"
+    // override val baseUrl = "https://www.cocomanga.com/"
 
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
+
+    override val baseUrl = "https://" + preferences.getString("baseurl_self", baseurl_default).toString() + "/"
 
     // Client configs
     private val mainSiteRateLimitInterceptor = SpecificHostRateLimitInterceptor(
@@ -55,9 +57,9 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
         .add("Referer", baseUrl)
 
     // Prepend with new decrypt keys (latest keys should appear at the start of the array)
-    private var decryptKeyCDATAArr = arrayOf(preferences.getString("C_DATA_self", "").toString())
-    private var decryptKeyEncCode1Arr = arrayOf(preferences.getString("enc_code1_self", "").toString())
-    private var decryptKeyEncCode2Arr = arrayOf(preferences.getString("enc_code2_self", "").toString())
+    private var decryptKeyCDATAArr = arrayOf(preferences.getString("C_DATA_self", C_DATA_default).toString())
+    private var decryptKeyEncCode1Arr = arrayOf(preferences.getString("enc_code1_self", enc_code1_default).toString())
+    private var decryptKeyEncCode2Arr = arrayOf(preferences.getString("enc_code2_self", enc_code2_default).toString())
 
     // Common
     private var commonSelector = "li.fed-list-item"
@@ -369,7 +371,7 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
             key = "C_DATA_self"
             title = "自定义加密密钥(C_DATA)"
 
-            setDefaultValue("EAFQQanD7tzDWdf6")
+            setDefaultValue(C_DATA_default)
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString("C_DATA_self", newValue as String).commit()
@@ -385,7 +387,7 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
             key = "enc_code1_self"
             title = "自定义加密密钥(enc_code1)"
 
-            setDefaultValue("6sK72X1Ra9j5LTdc")
+            setDefaultValue(enc_code1_default)
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString("enc_code1_self", newValue as String).commit()
@@ -401,10 +403,26 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
             key = "enc_code2_self"
             title = "自定义加密密钥(enc_code2)"
 
-            setDefaultValue("Mfu4e1Zltjbomgti")
+            setDefaultValue(enc_code2_default)
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val setting = preferences.edit().putString("enc_code2_self", newValue as String).commit()
+                    setting
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+            }
+        }.let(screen::addPreference)
+
+        EditTextPreference(screen.context).apply {
+            key = "baseurl_self"
+            title = "自定义源站网址"
+
+            setDefaultValue(baseurl_default)
+            setOnPreferenceChangeListener { _, newValue ->
+                try {
+                    val setting = preferences.edit().putString("baseurl_self", newValue as String).commit()
                     setting
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -434,5 +452,10 @@ class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
         /** This value affects the delay when hitting the connection limit to main site. Increasing this value may reduce the chance to get HTTP 403 error, but loading speed will be slower too. Tachiyomi restart required. Current value: %s" */
         private const val MAINSITE_RATEPERIOD_PREF_SUMMARY = "此值影响主站点连接限制时的延迟（毫秒）。增加这个值可能会减少出现HTTP 403错误的机会，但加载速度也会变慢。需要重启软件以生效。\n默认值：$MAINSITE_RATEPERIOD_PREF_DEFAULT\n当前值：%s"
         private val MAINSITE_RATEPERIOD_PREF_ENTRIES_ARRAY = (2000..6000 step 500).map { i -> i.toString() }.toTypedArray()
+
+        private const val C_DATA_default = "EAFQQanD7tzDWdf6"
+        private const val enc_code1_default = "6sK72X1Ra9j5LTdc"
+        private const val enc_code2_default = "Mfu4e1Zltjbomgti"
+        private const val baseurl_default = "www.cocomanga.com"
     }
 }
