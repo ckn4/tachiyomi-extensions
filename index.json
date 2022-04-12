@@ -2,10 +2,10 @@
   {
     "name": "Tachiyomi: Gohan",
     "pkg": "eu.kanade.tachiyomi.extension.ja.gohan",
-    "apk": "tachiyomi-ja.gohan-v1.2.1.apk",
+    "apk": "tachiyomi-ja.gohan-v1.2.2.apk",
     "lang": "ja",
-    "code": 1,
-    "version": "1.2.1",
+    "code": 2,
+    "version": "1.2.2",
     "nsfw": 0,
     "sources": [
       {
@@ -115,6 +115,23 @@
         "lang": "zh",
         "id": "2846483698029515603",
         "baseUrl": "http://mangaapi.manhuaren.com"
+      }
+    ]
+  },
+  {
+    "name": "Tachiyomi: CoCoManhuas",
+    "pkg": "eu.kanade.tachiyomi.extension.zh.onemanhuas",
+    "apk": "tachiyomi-zh.onemanhuas-v1.2.11.apk",
+    "lang": "zh",
+    "code": 11,
+    "version": "1.2.11",
+    "nsfw": 0,
+    "sources": [
+      {
+        "name": "CoCoManhuas",
+        "lang": "zh",
+        "id": "5467206407964059724",
+        "baseUrl": "https://www.cocomanga.com/"
       }
     ]
   }
