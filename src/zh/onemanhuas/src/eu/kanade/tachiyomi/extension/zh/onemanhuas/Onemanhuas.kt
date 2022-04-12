@@ -32,6 +32,7 @@ import javax.crypto.spec.SecretKeySpec
 
 // Originally, the site was called One漫画. The name has been changing every once in awhile
 class Onemanhuas : ConfigurableSource, ParsedHttpSource() {
+    override val id = 8252565807829914107
     override val lang = "zh"
     override val supportsLatest = true
     override val name = "COCOManhuas"
